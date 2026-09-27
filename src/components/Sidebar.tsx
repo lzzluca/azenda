@@ -29,20 +29,20 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
   )
 
   return (
-    <aside aria-label="Navigazione">
+    <aside aria-label="Navigation">
       <div className="logo" aria-label="aZenda"><span className="a">a</span><span className="z">Z</span>enda</div>
 
       <nav className="nav">
         {item('inbox', <InboxIcon />, 'Inbox', open.filter(inInbox(data)).length)}
-        {item('today', <TodayIcon />, 'Oggi', open.filter(t => t.due && t.due <= td).length)}
-        {item('upcoming', <UpcomingIcon />, 'Prossimi 7 giorni')}
-        {item('done', <DoneIcon />, 'Completate')}
+        {item('today', <TodayIcon />, 'Today', open.filter(t => t.due && t.due <= td).length)}
+        {item('upcoming', <UpcomingIcon />, 'Next 7 days')}
+        {item('done', <DoneIcon />, 'Completed')}
       </nav>
 
       <div>
         <div className="side-head">
-          Progetti
-          <button className="icon-btn" aria-label="Nuovo progetto" title="Nuovo progetto" onClick={() => setAdding(a => !a)}><PlusIcon /></button>
+          Projects
+          <button className="icon-btn" aria-label="New project" title="New project" onClick={() => setAdding(a => !a)}><PlusIcon /></button>
         </div>
         {adding && (
           <form className="side-form" onSubmit={e => {
@@ -54,7 +54,7 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
           }}>
             <input
               id="proj-name" autoFocus autoComplete="off" maxLength={60}
-              placeholder="Nome progetto, poi Invio"
+              placeholder="Project name, then Enter"
               value={name} onChange={e => setName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Escape') setAdding(false) }}
             />
@@ -63,20 +63,20 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
         <nav className="nav">
           {projects.length
             ? projects.map(p => item(`p:${p.id}`, <span className="dot" style={{ background: p.color }} />, p.name, open.filter(t => t.project === p.id).length))
-            : <div className="side-empty">Nessun progetto</div>}
+            : <div className="side-empty">No projects yet</div>}
         </nav>
       </div>
 
       <div>
-        <div className="side-head">Etichette</div>
+        <div className="side-head">Labels</div>
         <nav className="nav">
           {labels.length
             ? labels.map(l => item(`l:${l}`, <LabelIcon />, l, open.filter(t => t.labels.includes(l)).length))
-            : <div className="side-empty">Usa @etichetta nel testo</div>}
+            : <div className="side-empty">Type @label in a task</div>}
         </nav>
       </div>
 
-      <div className="status"><i /><span>Salvato su questo browser</span></div>
+      <div className="status"><i /><span>Saved in this browser</span></div>
     </aside>
   )
 }

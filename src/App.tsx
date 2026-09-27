@@ -46,16 +46,16 @@ export function App() {
     mainRef.current?.scrollTo(0, 0)
   }
 
-  // Menu laterale su mobile
+  // Slide-in sidebar on mobile
   useEffect(() => { document.body.classList.toggle('nav-open', navOpen) }, [navOpen])
 
-  // Aggiorna le viste basate sulla data quando cambia il giorno
+  // Refresh date-based views when the day changes
   useEffect(() => {
     const id = setInterval(() => setToday(iso(new Date())), 60_000)
     return () => clearInterval(id)
   }, [])
 
-  // Tasto Q: scrivi un nuovo task
+  // Q key: focus the quick-add field
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName?.toLowerCase()
@@ -99,14 +99,14 @@ export function App() {
     const visible = next.groups.some(g => g.items.some(x => x.id === t.id))
     if (!visible) {
       const where = project ? projects[project]?.name : 'Inbox'
-      showToast({ msg: `Aggiunto in ${where}${due ? ' · ' + dueInfo(due).label : ''}`, actLabel: 'Apri', act: () => setEditingId(t.id) })
+      showToast({ msg: `Added to ${where}${due ? ' · ' + dueInfo(due).label : ''}`, actLabel: 'Open', act: () => setEditingId(t.id) })
     }
   }
 
   const toggle = (t: Task) => {
     if (t.done) return patchTask(t.id, { done: false, doneAt: null })
     patchTask(t.id, { done: true, doneAt: Date.now() })
-    showToast({ msg: 'Task completato', actLabel: 'Annulla', act: () => patchTask(t.id, { done: false, doneAt: null }) })
+    showToast({ msg: 'Task completed', actLabel: 'Undo', act: () => patchTask(t.id, { done: false, doneAt: null }) })
   }
 
   const removeProject = () => {
@@ -115,7 +115,7 @@ export function App() {
     const { id, name } = vm.project
     setView('inbox')
     deleteProject(id)
-    showToast({ msg: `Progetto «${name}» eliminato` })
+    showToast({ msg: `Project "${name}" deleted` })
   }
 
   const closeEditor = useCallback(() => setEditingId(null), [])
@@ -130,7 +130,7 @@ export function App() {
         <main ref={mainRef}>
           <div className="wrap">
             <div className="top">
-              <button className="icon-btn menu-btn" aria-label="Apri menu" onClick={() => setNavOpen(true)}><MenuIcon /></button>
+              <button className="icon-btn menu-btn" aria-label="Open menu" onClick={() => setNavOpen(true)}><MenuIcon /></button>
               <div>
                 <h1>{vm.title}</h1>
                 {vm.sub && <div className="sub">{vm.sub}</div>}
@@ -138,7 +138,7 @@ export function App() {
               <div className="spacer" />
               {vm.project && (
                 <button className={'ghost' + (armedDelete ? ' armed' : '')} onClick={removeProject}>
-                  {armedDelete ? 'Conferma: i task vanno in Inbox' : 'Elimina progetto'}
+                  {armedDelete ? 'Confirm: tasks move to Inbox' : 'Delete project'}
                 </button>
               )}
             </div>
@@ -147,7 +147,7 @@ export function App() {
               <>
                 <QuickAdd ref={quickRef} projects={data.projects} onAdd={handleAdd} />
                 <div className="hint">
-                  Scorciatoie nel testo: <code>oggi</code> <code>domani</code> <code>venerdì</code> <code>12/10</code> · priorità <code>p1</code>–<code>p4</code> · <code>#progetto</code> · <code>@etichetta</code> · premi <code>Q</code> per scrivere
+                  Shortcuts: <code>today</code> <code>tomorrow</code> <code>friday</code> <code>10/12</code> · priority <code>p1</code>–<code>p4</code> · <code>#project</code> · <code>@label</code> · press <code>Q</code> to type
                 </div>
               </>
             )}
@@ -187,7 +187,7 @@ export function App() {
           task={editing}
           projects={sortedProjects(data)}
           onSave={t => { saveTask(t); closeEditor() }}
-          onDelete={() => { deleteTask(editing.id); closeEditor(); showToast({ msg: 'Task eliminato' }) }}
+          onDelete={() => { deleteTask(editing.id); closeEditor(); showToast({ msg: 'Task deleted' }) }}
           onClose={closeEditor}
         />
       )}

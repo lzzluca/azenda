@@ -4,11 +4,11 @@ export interface Task {
   id: string
   title: string
   desc: string
-  /** Data di scadenza in formato YYYY-MM-DD, o null. */
+  /** Due date as YYYY-MM-DD, or null. */
   due: string | null
   priority: Priority
   labels: string[]
-  /** Id del progetto; null significa Inbox. */
+  /** Project id; null means Inbox. */
   project: string | null
   done: boolean
   doneAt: number | null

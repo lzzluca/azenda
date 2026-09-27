@@ -25,7 +25,7 @@ export function TaskItem({ task: t, project, showProject, onToggle, onOpen }: Pr
     <div className={'task' + (t.done ? ' done' : '') + (leaving ? ' leaving' : '')}>
       <button
         className={`check p${t.priority}`}
-        aria-label={`${t.done ? 'Segna come da fare' : 'Completa'}: ${t.title}`}
+        aria-label={`${t.done ? 'Mark as not done' : 'Complete'}: ${t.title}`}
         onClick={toggle}
       >
         <CheckIcon />

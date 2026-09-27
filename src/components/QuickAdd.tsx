@@ -17,7 +17,7 @@ export const QuickAdd = forwardRef<HTMLInputElement, Props>(function QuickAdd({ 
   const chips: React.ReactNode[] = []
   if (r.due) chips.push(<><CalIcon /> {dueInfo(r.due).label}</>)
   if (r.priority < 4) chips.push(`P${r.priority}`)
-  if (r.project) chips.push('#' + (findProject(projects, r.project)?.name ?? `${r.project} (nuovo)`))
+  if (r.project) chips.push('#' + (findProject(projects, r.project)?.name ?? `${r.project} (new)`))
   r.labels.forEach(l => chips.push('@' + l))
 
   return (
@@ -29,11 +29,11 @@ export const QuickAdd = forwardRef<HTMLInputElement, Props>(function QuickAdd({ 
     }}>
       <div className="quick-row">
         <input
-          ref={ref} id="quick" aria-label="Nuovo task"
-          placeholder="Aggiungi un task… es. «Pagare bolletta venerdì p1 #Casa»"
+          ref={ref} id="quick" aria-label="New task"
+          placeholder='Add a task… e.g. "Pay bills friday p1 #Home"'
           value={value} onChange={e => setValue(e.target.value)}
         />
-        <button className="btn" type="submit" disabled={!r.title}>Aggiungi</button>
+        <button className="btn" type="submit" disabled={!r.title}>Add</button>
       </div>
       {chips.length > 0 && (
         <div className="chips">{chips.map((c, i) => <span key={i} className="chip">{c}</span>)}</div>

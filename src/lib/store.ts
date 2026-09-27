@@ -19,22 +19,22 @@ export const newProject = (name: string, existing: number): Project => ({
 })
 
 function seedWelcome(): Data {
-  const pid = 'benvenuto'
+  const pid = 'welcome'
   const now = Date.now()
   const today = iso(new Date())
   const tomorrow = iso(addDays(new Date(), 1))
   const rows: [string, string, Task['priority'], string[]][] = [
-    ['Scrivi un task nella barra in alto e premi Invio', today, 4, []],
-    ['Prova il linguaggio naturale: «Chiamare il dentista domani p2 #Personale»', today, 3, []],
-    ['Clicca su un task per aggiungere note, scadenza ed etichette', today, 4, ['prova']],
-    ['Completa un task toccando il cerchio a sinistra', tomorrow, 1, ['prova']],
+    ['Type a task in the bar at the top and press Enter', today, 4, []],
+    ['Try natural language: "Call the dentist tomorrow p2 #Personal"', today, 3, []],
+    ['Click a task to add notes, a due date and labels', today, 4, ['tutorial']],
+    ['Complete a task by clicking the circle on the left', tomorrow, 1, ['tutorial']],
   ]
   const tasks: Record<string, Task> = {}
   rows.forEach(([title, due, priority, labels], i) => {
-    const id = `benvenuto-${i}`
+    const id = `welcome-${i}`
     tasks[id] = { id, title, desc: '', due, priority, labels, project: pid, done: false, doneAt: null, created: now + i }
   })
-  return { tasks, projects: { [pid]: { id: pid, name: 'Benvenuto', color: COLORS[0], order: 0 } } }
+  return { tasks, projects: { [pid]: { id: pid, name: 'Welcome', color: COLORS[0], order: 0 } } }
 }
 
 function load(): Data {
@@ -44,16 +44,16 @@ function load(): Data {
       const d = JSON.parse(raw) as Partial<Data>
       return { tasks: d.tasks ?? {}, projects: d.projects ?? {} }
     }
-  } catch { /* storage non disponibile: si riparte dagli esempi */ }
+  } catch { /* storage unavailable: start from the examples */ }
   return seedWelcome()
 }
 
-/** Stato dell'app salvato in localStorage. Per un backend, sostituire qui le scritture. */
+/** App state persisted to localStorage. To use a backend, replace the writes here. */
 export function useStore() {
   const [data, setData] = useState<Data>(load)
 
   useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify(data)) } catch { /* ignora */ }
+    try { localStorage.setItem(KEY, JSON.stringify(data)) } catch { /* ignore */ }
   }, [data])
 
   const saveTask = useCallback((t: Task) =>
@@ -71,7 +71,7 @@ export function useStore() {
   const saveProject = useCallback((p: Project) =>
     setData(d => ({ ...d, projects: { ...d.projects, [p.id]: p } })), [])
 
-  /** Elimina il progetto e sposta i suoi task in Inbox. */
+  /** Deletes the project and moves its tasks to the Inbox. */
   const deleteProject = useCallback((id: string) =>
     setData(d => {
       const { [id]: _removed, ...projects } = d.projects

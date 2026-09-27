@@ -27,7 +27,7 @@ export function TaskEditor({ task, projects, onSave, onDelete, onClose }: Props)
   return (
     <>
       <div className="scrim" onClick={onClose} />
-      <form className="sheet" role="dialog" aria-modal="true" aria-label="Modifica task" onSubmit={e => {
+      <form className="sheet" role="dialog" aria-modal="true" aria-label="Edit task" onSubmit={e => {
         e.preventDefault()
         if (!title.trim()) return
         onSave({
@@ -40,33 +40,33 @@ export function TaskEditor({ task, projects, onSave, onDelete, onClose }: Props)
           labels: [...new Set(labels.split(',').map(s => s.trim().replace(/^@/, '').toLowerCase()).filter(Boolean))],
         })
       }}>
-        <input id="ed-title" aria-label="Titolo" maxLength={300} required autoFocus value={title} onChange={e => setTitle(e.target.value)} />
-        <textarea id="ed-desc" placeholder="Note" aria-label="Note" value={desc} onChange={e => setDesc(e.target.value)} />
+        <input id="ed-title" aria-label="Title" maxLength={300} required autoFocus value={title} onChange={e => setTitle(e.target.value)} />
+        <textarea id="ed-desc" placeholder="Notes" aria-label="Notes" value={desc} onChange={e => setDesc(e.target.value)} />
         <div className="fields">
-          <label>Scadenza<input type="date" id="ed-due" value={due} onChange={e => setDue(e.target.value)} /></label>
-          <label>Priorità
+          <label>Due date<input type="date" id="ed-due" value={due} onChange={e => setDue(e.target.value)} /></label>
+          <label>Priority
             <select id="ed-prio" value={priority} onChange={e => setPriority(Number(e.target.value) as Priority)}>
-              <option value="1">P1 · Urgente</option>
-              <option value="2">P2 · Alta</option>
-              <option value="3">P3 · Media</option>
-              <option value="4">P4 · Nessuna</option>
+              <option value="1">P1 · Urgent</option>
+              <option value="2">P2 · High</option>
+              <option value="3">P3 · Medium</option>
+              <option value="4">P4 · None</option>
             </select>
           </label>
-          <label>Progetto
+          <label>Project
             <select id="ed-proj" value={project} onChange={e => setProject(e.target.value)}>
               <option value="">Inbox</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
-          <label>Etichette<input id="ed-labels" placeholder="casa, urgente" value={labels} onChange={e => setLabels(e.target.value)} /></label>
+          <label>Labels<input id="ed-labels" placeholder="home, urgent" value={labels} onChange={e => setLabels(e.target.value)} /></label>
         </div>
         <div className="sheet-actions">
           <button type="button" className={'ghost' + (armed ? ' armed' : '')} onClick={() => armed ? onDelete() : setArmed(true)}>
-            {armed ? 'Conferma eliminazione' : 'Elimina'}
+            {armed ? 'Confirm delete' : 'Delete'}
           </button>
           <div className="spacer" />
-          <button type="button" className="plain" onClick={onClose}>Annulla</button>
-          <button type="submit" className="btn">Salva</button>
+          <button type="button" className="plain" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn">Save</button>
         </div>
       </form>
     </>
