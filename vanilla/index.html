@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>aZenda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar" aria-label="Navigazione">
+    <div class="logo" aria-label="aZenda"><span class="a">a</span><span class="z">Z</span>enda</div>
+    <nav class="nav" id="nav-main"></nav>
+    <div>
+      <div class="side-head">Progetti <button class="icon-btn" id="add-proj-btn" aria-label="Nuovo progetto" title="Nuovo progetto"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+      <form class="side-form" id="proj-form" hidden><input id="proj-name" placeholder="Nome progetto, poi Invio" maxlength="60" autocomplete="off"></form>
+      <nav class="nav" id="nav-proj"></nav>
+    </div>
+    <div>
+      <div class="side-head">Etichette</div>
+      <nav class="nav" id="nav-labels"></nav>
+    </div>
+    <div class="status" id="status"><i></i><span></span></div>
+  </aside>
+  <div class="scrim" id="nav-scrim" hidden></div>
+
+  <main>
+    <div class="wrap">
+      <div class="top">
+        <button class="icon-btn menu-btn" id="menu-btn" aria-label="Apri menu"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <div><h1 id="title">Oggi</h1><div class="sub" id="subtitle"></div></div>
+        <div class="spacer"></div>
+        <button class="ghost" id="del-proj" hidden>Elimina progetto</button>
+      </div>
+
+      <form class="quick" id="quick-form" autocomplete="off">
+        <div class="quick-row">
+          <input id="quick" placeholder="Aggiungi un task… es. «Pagare bolletta venerdì p1 #Casa»" aria-label="Nuovo task">
+          <button class="btn" id="quick-btn" type="submit" disabled>Aggiungi</button>
+        </div>
+        <div class="chips" id="chips" hidden></div>
+      </form>
+      <div class="hint">Scorciatoie nel testo: <code>oggi</code> <code>domani</code> <code>venerdì</code> <code>12/10</code> · priorità <code>p1</code>–<code>p4</code> · <code>#progetto</code> · <code>@etichetta</code> · premi <code>Q</code> per scrivere</div>
+
+      <div id="list"></div>
+    </div>
+  </main>
+</div>
+
+<div class="scrim" id="ed-scrim" hidden></div>
+<form class="sheet" id="editor" hidden role="dialog" aria-modal="true" aria-label="Modifica task">
+  <input id="ed-title" aria-label="Titolo" maxlength="300" required>
+  <textarea id="ed-desc" placeholder="Note" aria-label="Note"></textarea>
+  <div class="fields">
+    <label>Scadenza<input type="date" id="ed-due"></label>
+    <label>Priorità<select id="ed-prio">
+      <option value="1">P1 · Urgente</option><option value="2">P2 · Alta</option>
+      <option value="3">P3 · Media</option><option value="4">P4 · Nessuna</option>
+    </select></label>
+    <label>Progetto<select id="ed-proj"></select></label>
+    <label>Etichette<input id="ed-labels" placeholder="casa, urgente"></label>
+  </div>
+  <div class="sheet-actions">
+    <button type="button" class="ghost" id="ed-delete">Elimina</button>
+    <div class="spacer"></div>
+    <button type="button" class="plain" id="ed-cancel">Annulla</button>
+    <button type="submit" class="btn">Salva</button>
+  </div>
+</form>
+
+<div class="toast" id="toast" hidden role="status"><span id="toast-msg"></span><button id="toast-act" hidden></button></div>
+
+<script src="app.js"></script>
+</body>
+</html>
