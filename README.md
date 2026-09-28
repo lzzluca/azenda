@@ -21,6 +21,10 @@ npm run build    # type-check + production build in dist/
 - Task editor, undo after completing, press `Q` to start typing
 - Automatic light/dark theme, mobile layout
 
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for ideas to come back to.
+
 ## Structure
 
 ```
