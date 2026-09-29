@@ -23,7 +23,9 @@ npm run build    # type-check + production build in dist/
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for ideas to come back to.
+Next up: an opinionated, enforced workflow (projects need a measurable target and a
+deadline, backlogs have hard caps, focus labels are limited, a guided monthly review).
+See [ROADMAP.md](ROADMAP.md) for the breakdown and for ideas to come back to.
 
 ## Structure
 
