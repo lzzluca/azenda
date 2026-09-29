@@ -1,6 +1,14 @@
 # aZenda
 
-A Todoist-style task manager. React 19 + TypeScript + Vite; data lives in the browser's `localStorage`.
+A task manager with an opinionated, enforced workflow. Most task apps are neutral
+containers that let backlogs grow into a mess; aZenda builds the method into the product:
+every project needs a measurable target and deadline, backlogs have hard caps, focus
+labels are limited, and a guided monthly review keeps the system lean.
+
+**Status:** the base task manager works today (see [Features](#features)). The enforced
+workflow is what gets built next, step by step, as described in [ROADMAP.md](ROADMAP.md).
+
+React 19 + TypeScript + Vite; data lives in the browser's `localStorage`.
 
 ## Commands
 
@@ -23,9 +31,8 @@ npm run build    # type-check + production build in dist/
 
 ## Roadmap
 
-Next up: an opinionated, enforced workflow (projects need a measurable target and a
-deadline, backlogs have hard caps, focus labels are limited, a guided monthly review).
-See [ROADMAP.md](ROADMAP.md) for the breakdown and for ideas to come back to.
+See [ROADMAP.md](ROADMAP.md) for the breakdown of the enforced workflow and for ideas to
+come back to.
 
 ## Structure
 
