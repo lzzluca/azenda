@@ -25,7 +25,7 @@ silently drops or rewrites data.
 | **Project** | Has a target and a definition of done. No deadline until it enters a sprint. Leisure projects (a race, a hobby build) are projects like any other. |
 | **Support project** | A project that is the child of another project. Has its own target and definition of done. Pulled one item at a time after the day's scheduled tasks; the parent's checkpoint decides what to pull. |
 | **Sprint** | The scheduled stretch of work towards a project's current target. The only place with deadlines. One at a time: "active project" means "the project in sprint". |
-| **Workbench** | A queue of items without a target (Italian: *cantiere*). Every item has a clear first step. A queue with a target is a project, not a workbench. |
+| **Workbench** | A queue of items without a target (Italian: *cantiere*). Every item has a clear first step. A queue with a target is a project, not a workbench. Usually belongs to a project; a standalone one behaves like a list: consumed through labels and covered by the monthly review. |
 | **List** | A container without a target. Either a *commitment* list or a *material* list. |
 | **Commitment list** | Things already decided, not yet scheduled: admin, errands. |
 | **Material list** | Things that might happen: someday/maybe, ideas, references. |
@@ -95,6 +95,18 @@ need subtasks.
 - [ ] What gets pulled is decided at the parent's checkpoint, one item at a time.
 - [ ] Closing a parent project forces a decision on its support projects and workbench:
       close them, or move them out.
+- [ ] A workbench without a parent is treated as a list: its items take `Next` and
+      `Radar` and show up in the monthly review. Anything that would escape the review
+      does not belong in the app at all, but in an external notes vault.
+
+### 4b. A task is an action
+
+A task's title is an action. Descriptions, reference material and AI output live in an
+external notes vault (e.g. Obsidian), and the task carries a link to the note. The one
+exception is the instructions needed to execute the task, which die with it.
+
+- [ ] Short, fixed cap on the description field. When it is hit, the app suggests moving
+      the text to a note and keeping a link.
 
 ### 5. Labels
 
@@ -150,10 +162,10 @@ and only through the form in step 2. The rest is open (see questions below).
 
 ### Open questions
 
-- **Monthly review:** is a guided wizard (Radar triage, commitment-list cleanup, metric)
-  worth enforcing, or is the one-promotion rule enough? To be stress-tested before
-  building anything beyond step 9.
-- Must a workbench belong to a project, or can it stand alone?
+- **Monthly review:** to be redesigned against the current rules (standalone workbenches
+  are now part of it, labels have no limits). Is a guided wizard worth enforcing, or is
+  the one-promotion rule enough? To be stress-tested before building anything beyond
+  step 9.
 - Should blocked actions allow an explicit, logged override?
 - `localStorage` only, or is this the moment to add a backend so snapshots survive
   across devices?
