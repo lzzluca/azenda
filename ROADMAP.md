@@ -7,8 +7,9 @@
 
 **Direction:** aZenda stops being a generic Todoist clone and becomes a task manager with
 one built-in workflow that the app enforces instead of merely suggesting. Nothing becomes
-a project without a measurable target and a definition of done, deadlines exist only
-inside the one active sprint, and every item in a work queue has a first step.
+a project without a measurable target and a definition of done, a target gets its
+deadline only when its project enters the one active sprint, and every item in a work
+queue has a first step. Tasks can carry dates anywhere; it is the *target* that cannot.
 
 Two principles drive every rule below:
 
@@ -24,7 +25,7 @@ silently drops or rewrites data.
 | --- | --- |
 | **Project** | Has a target and a definition of done. No deadline until it enters a sprint. Leisure projects (a race, a hobby build) are projects like any other. |
 | **Support project** | A project that is the child of another project. Has its own target and definition of done. Pulled one item at a time after the day's scheduled tasks; the parent's checkpoint decides what to pull. |
-| **Sprint** | The scheduled stretch of work towards a project's current target. The only place with deadlines. One at a time: "active project" means "the project in sprint". |
+| **Sprint** | The scheduled stretch of work towards a project's current target. The only place where a target has a deadline. One at a time: "active project" means "the project in sprint". |
 | **Workbench** | A queue of items without a target (Italian: *cantiere*). Every item has a clear first step. A queue with a target is a project, not a workbench. Usually belongs to a project; a standalone one behaves like a list: consumed through labels and covered by the monthly review. |
 | **List** | A container without a target. Either a *commitment* list or a *material* list. |
 | **Commitment list** | Things already decided, not yet scheduled: admin, errands. |
@@ -81,7 +82,8 @@ need subtasks.
 ### 3. One sprint at a time
 
 - [ ] Starting a sprint asks for the deadline of the project's target. That is the only
-      way a project gets a deadline.
+      way a target gets a deadline. Individual tasks can have dates anywhere, in or out of
+      the sprint: a list task due during the sprint is pulled into it.
 - [ ] Starting a sprint while another is active is blocked until the first one is closed.
 - [ ] Reaching the target can close the sprint without closing the project: the app then
       asks for a new target, or lets the project go back to "ready, no deadline".

@@ -2,8 +2,9 @@
 
 A task manager with an opinionated, enforced workflow. Most task apps are neutral
 containers that let backlogs grow into a mess; aZenda builds the method into the product:
-nothing becomes a project without a measurable target and a definition of done, deadlines
-exist only inside the one active sprint, and every item in a work queue has a first step.
+nothing becomes a project without a measurable target and a definition of done, a target
+gets its deadline only when its project enters the one active sprint, and every item in a
+work queue has a first step.
 
 **Status:** the base task manager works today (see [Features](#features)). The enforced
 workflow is what gets built next, step by step, as described in [ROADMAP.md](ROADMAP.md).
