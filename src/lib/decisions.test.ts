@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Data, Project, Task } from '../types'
-import { decisions, resolve } from './decisions'
+import { decisions } from './decisions'
 import { normalizeProject } from './projects'
 import { normalizeTask, prepareSave, toNext } from './tasks'
 
@@ -36,18 +36,6 @@ describe('decisions', () => {
     const p = project('p', { target: 't', dod: 'd', end: '2026-10-20' })
     const d = data([task('old', { updated: now - 100 * DAY })], [p])
     expect(decisions(d, now).map(x => [x.kind, x.days])).toEqual([['inbox', 100], ['deadline', 4]])
-  })
-
-  it('asks to move a dated project out of Someday maybe, or to drop its dates', () => {
-    const someday = project('builtin-someday', { builtin: 'someday' })
-    const dated = project('dated', { target: 't', dod: 'd', parent: someday.id, end: '2026-12-01' })
-    const undated = project('undated', { target: 't', dod: 'd', parent: someday.id })
-    const nested = project('nested', { target: 't', dod: 'd', parent: 'dated', end: '2026-12-01' })
-    const d = data([], [someday, dated, undated, nested])
-    const [x, ...rest] = decisions(d, now)
-    expect([x.kind, x.id, rest]).toEqual(['dated', 'dated', []])
-    expect(resolve(x, 'moveOut', d, now).saveProjects).toEqual([{ ...dated, parent: null }])
-    expect(resolve(x, 'undateProject', d, now).saveProjects).toEqual([{ ...dated, start: null, end: null }])
   })
 
   it('ignores done tasks and closed projects', () => {

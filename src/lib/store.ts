@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Data, Project, Task } from '../types'
 import { addDays, iso, norm } from './dates'
-import { BUILTINS, COLORS, normalizeProject, withoutProject } from './projects'
+import { BUILTINS, COLORS, normalizeProject, placed, withoutProject } from './projects'
 import { normalizeTask, prepareSave } from './tasks'
 
 export { COLORS, newProject } from './projects'
@@ -124,7 +124,8 @@ export function useStore() {
     sync(api(`/tasks/${id}`, { method: 'DELETE' }))
   }, [])
 
-  const saveProject = useCallback((p: Project) => {
+  const saveProject = useCallback((next: Project) => {
+    const p = placed(latest.current.projects[next.id], next, latest.current.projects)
     setData(d => ({ ...d, projects: { ...d.projects, [p.id]: p } }))
     sync(put('projects', p))
   }, [])

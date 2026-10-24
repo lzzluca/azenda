@@ -51,6 +51,18 @@ export function subtree(list: Project[], id: string): Set<string> {
   return out
 }
 
+/**
+ * Where `next` belongs after a save: a top-level project that gets dates leaves Someday maybe,
+ * one that loses them goes back. Only on that change, and never against a parent picked in the same save.
+ */
+export function placed(prev: Project | undefined, next: Project, projects: Record<string, Project>): Project {
+  const someday = Object.values(projects).find(p => p.builtin === 'someday')
+  if (!someday || !prev || !isProject(next) || prev.parent !== next.parent) return next
+  if (!prev.end && next.end && next.parent === someday.id) return { ...next, parent: null }
+  if (prev.end && !next.end && next.parent === null) return { ...next, parent: someday.id }
+  return next
+}
+
 /** Removes `id`; its children move up to its parent. */
 export function withoutProject(projects: Record<string, Project>, id: string): Record<string, Project> {
   const parent = projects[id]?.parent ?? null

@@ -10,7 +10,6 @@ export const RULES = { inbox: 15, stale: 60, reschedules: 2, radar: 30 }
 export type Decision =
   | { kind: 'inbox' | 'stale' | 'rescheduled' | 'radar'; id: string; task: Task; days: number }
   | { kind: 'deadline'; id: string; project: Project; days: number }
-  | { kind: 'dated'; id: string; project: Project; days: number }
 
 const DAY = 864e5
 const daysSince = (ts: number, now: number) => Math.floor((now - ts) / DAY)
@@ -26,8 +25,6 @@ export function decisions(d: Data, now = Date.now()): Decision[] {
   for (const p of Object.values(d.projects)) {
     if (isOpen(p) && p.end && p.end < td) {
       out.push({ kind: 'deadline', id: p.id, project: p, days: -dayDiff(p.end, new Date(now)) })
-    } else if (isOpen(p) && p.end && p.parent && d.projects[p.parent]?.builtin === 'someday') {
-      out.push({ kind: 'dated', id: p.id, project: p, days: 0 })
     }
   }
 
@@ -51,7 +48,7 @@ export function decisions(d: Data, now = Date.now()): Decision[] {
 
 export type DecisionAction =
   | 'keep' | 'next' | 'radar' | 'undate' | 'delete' | 'someday' | 'admin' | 'dropRadar'
-  | 'newTarget' | 'close' | 'moveOut' | 'undateProject'
+  | 'newTarget' | 'close'
   | { extend: { deadline: string; reason: string } }
 
 export interface Resolution {
@@ -65,11 +62,9 @@ export interface Resolution {
 /** What a decision's action changes. Pure: the caller persists it. */
 export function resolve(d: Decision, a: DecisionAction, data: Data, now = Date.now()): Resolution {
   const r: Resolution = { saveTasks: [], saveProjects: [], deleteTasks: [] }
-  if (d.kind === 'deadline' || d.kind === 'dated') {
+  if (d.kind === 'deadline') {
     const p = data.projects[d.id] ?? d.project
-    if (a === 'moveOut') r.saveProjects.push({ ...p, parent: null })
-    else if (a === 'undateProject') r.saveProjects.push({ ...p, start: null, end: null })
-    else if (a === 'newTarget') r.editProject = p.id
+    if (a === 'newTarget') r.editProject = p.id
     else if (a === 'close') r.saveProjects.push({ ...p, closedAt: now })
     else if (typeof a === 'object' && p.end) {
       const extensions = [...p.extensions, { from: p.end, to: a.extend.deadline, reason: a.extend.reason }]

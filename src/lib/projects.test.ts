@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Project } from '../types'
-import { childrenOf, isProject, normalizeProject, phase, subtree, withoutProject } from './projects'
+import { childrenOf, isProject, normalizeProject, phase, placed, subtree, withoutProject } from './projects'
 
 const p = (id: string, extra: Partial<Project> = {}): Project =>
   normalizeProject({ id, name: id, color: '#000', order: 1, ...extra })
@@ -28,6 +28,27 @@ describe('projects', () => {
     expect(phase(p('a', { end: '2026-11-01' }), today)).toBe('active')
     expect(phase(p('a', { start: '2026-10-24', end: '2026-11-01' }), today)).toBe('active')
     expect(phase(p('a', { start: '2026-10-25', end: '2026-11-01' }), today)).toBe('planned')
+  })
+
+  it('moves a top-level project out of Someday maybe when it gets dates, and back when it loses them', () => {
+    const someday = p('builtin-someday', { builtin: 'someday' })
+    const proj = p('a', { target: 't', dod: 'd', parent: someday.id })
+    const all = { [someday.id]: someday, a: proj }
+    const dated = { ...proj, end: '2026-12-01' }
+    expect(placed(proj, dated, all).parent).toBeNull()
+    expect(placed({ ...dated, parent: null }, { ...dated, parent: null, end: null }, all).parent).toBe(someday.id)
+  })
+
+  it('leaves the place alone for sub-projects, lists, unchanged dates and an explicit move', () => {
+    const someday = p('builtin-someday', { builtin: 'someday' })
+    const all = { [someday.id]: someday }
+    const sub = p('a', { target: 't', dod: 'd', parent: 'job' })
+    expect(placed(sub, { ...sub, end: '2026-12-01' }, all).parent).toBe('job')
+    const list = p('l', { parent: someday.id })
+    expect(placed(list, { ...list, end: '2026-12-01' }, all).parent).toBe(someday.id)
+    const top = p('t', { target: 't', dod: 'd', end: '2026-12-01' })
+    expect(placed(top, { ...top, name: 'renamed' }, all).parent).toBeNull()
+    expect(placed(top, { ...top, end: null, parent: 'other' }, all).parent).toBe('other')
   })
 
   it('lists children, treating a missing parent as top level', () => {

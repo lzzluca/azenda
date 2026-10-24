@@ -15,20 +15,6 @@ export function DecisionCard({ decision: d, projects, onAct }: Props) {
   const [deadline, setDeadline] = useState('')
   const [reason, setReason] = useState('')
 
-  if (d.kind === 'dated') {
-    const p = d.project
-    return (
-      <div className="card">
-        <div className="why">Dated, but still in Someday maybe</div>
-        <div className="what">🎯 {p.target} <span className="muted">· {p.name}</span></div>
-        <div className="actions">
-          <button className="ghost ok" onClick={() => onAct(d, 'moveOut')}>Move to the top level</button>
-          <button className="ghost" onClick={() => onAct(d, 'undateProject')}>Drop the dates</button>
-        </div>
-      </div>
-    )
-  }
-
   if (d.kind === 'deadline') {
     const p = d.project
     return (
