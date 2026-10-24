@@ -25,24 +25,27 @@ export function openDb(file = ':memory:') {
       return [v.id, v]
     }))
 
+  const transaction = (fn: () => void) => {
+    db.exec('BEGIN')
+    try { fn(); db.exec('COMMIT') } catch (e) { db.exec('ROLLBACK'); throw e }
+  }
+
   const saveTask = (t: Task) => { stmts.tasks.upsert.run(t.id, JSON.stringify(t), Date.now()) }
   const deleteTask = (id: string) => { stmts.tasks.remove.run(id) }
   const saveProject = (p: Project) => { stmts.projects.upsert.run(p.id, JSON.stringify(p), Date.now()) }
 
-  /** Deletes the project and moves its tasks to the Inbox. */
-  const deleteProject = (id: string) => {
-    db.exec('BEGIN')
-    try {
-      stmts.projects.remove.run(id)
-      for (const t of Object.values(rows<Task>('tasks'))) {
-        if (t.project === id) saveTask({ ...t, project: null })
-      }
-      db.exec('COMMIT')
-    } catch (e) {
-      db.exec('ROLLBACK')
-      throw e
+  /** Deletes the container: its tasks move to the Inbox, its children to its parent. */
+  const deleteProject = (id: string) => transaction(() => {
+    const projects = rows<Project>('projects')
+    const parent = projects[id]?.parent ?? null
+    stmts.projects.remove.run(id)
+    for (const p of Object.values(projects)) {
+      if (p.parent === id) saveProject({ ...p, parent })
     }
-  }
+    for (const t of Object.values(rows<Task>('tasks'))) {
+      if (t.project === id) saveTask({ ...t, project: null })
+    }
+  })
 
   const all = (): Data => ({ tasks: rows<Task>('tasks'), projects: rows<Project>('projects') })
 

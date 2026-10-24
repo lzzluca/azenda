@@ -1,17 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Task, View } from './types'
-import { dueInfo, iso } from './lib/dates'
+import { dayDiff, dueInfo, iso } from './lib/dates'
 import type { Parsed } from './lib/parse'
+import { isProject } from './lib/projects'
 import { findProject, newProject, useStore } from './lib/store'
 import { buildView, sortedProjects } from './lib/views'
 import { Sidebar } from './components/Sidebar'
 import { QuickAdd } from './components/QuickAdd'
 import { TaskItem } from './components/TaskItem'
 import { TaskEditor } from './components/TaskEditor'
+import { ProjectEditor } from './components/ProjectEditor'
 import { Toast, type ToastData } from './components/Toast'
 import { MenuIcon } from './components/icons'
 
 const VIEW_KEY = 'azenda-view'
+
+function SprintTag({ deadline }: { deadline: string }) {
+  const n = dayDiff(deadline)
+  const text = n < 0 ? `sprint · ${-n}d late` : n === 0 ? 'sprint · due today' : `sprint · ${n}d left`
+  return <span className={'tag' + (n < 0 ? ' late' : '')}>{text}</span>
+}
 
 function initialView(): View {
   try { return (localStorage.getItem(VIEW_KEY) as View | null) ?? 'today' } catch { return 'today' }
@@ -23,6 +31,8 @@ export function App() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [navOpen, setNavOpen] = useState(false)
   const [armedDelete, setArmedDelete] = useState(false)
+  const [armedClose, setArmedClose] = useState(false)
+  const [editingProject, setEditingProject] = useState(false)
   const [toast, setToast] = useState<ToastData | null>(null)
   const [, setToday] = useState(() => iso(new Date()))
   const toastTimer = useRef<number | undefined>(undefined)
@@ -42,6 +52,7 @@ export function App() {
     setViewState(v)
     setNavOpen(false)
     setArmedDelete(false)
+    setArmedClose(false)
     try { localStorage.setItem(VIEW_KEY, v) } catch { /* ignora */ }
     mainRef.current?.scrollTo(0, 0)
   }
@@ -115,10 +126,20 @@ export function App() {
     const { id, name } = vm.project
     setView('inbox')
     deleteProject(id)
-    showToast({ msg: `Project "${name}" deleted` })
+    showToast({ msg: `"${name}" deleted` })
+  }
+
+  /** Closing confirms the definition of done, then the project moves to Proud of. */
+  const closeProject = () => {
+    if (!vm.project) return
+    if (!armedClose) return setArmedClose(true)
+    saveProject({ ...vm.project, sprint: null, closedAt: Date.now() })
+    setView('proud')
+    showToast({ msg: `"${vm.project.name}" is done. Proud of it.` })
   }
 
   const closeEditor = useCallback(() => setEditingId(null), [])
+  const closeProjectEditor = useCallback(() => setEditingProject(false), [])
   const total = vm.groups.reduce((n, g) => n + g.items.length, 0)
 
   return (
@@ -136,12 +157,55 @@ export function App() {
                 {vm.sub && <div className="sub">{vm.sub}</div>}
               </div>
               <div className="spacer" />
-              {vm.project && (
-                <button className={'ghost' + (armedDelete ? ' armed' : '')} onClick={removeProject}>
-                  {armedDelete ? 'Confirm: tasks move to Inbox' : 'Delete project'}
-                </button>
-              )}
             </div>
+
+            {vm.project && (
+              <div className="phead">
+                {vm.project.closedAt ? (
+                  <p className="muted">Closed on {new Date(vm.project.closedAt).toLocaleDateString()}. Its definition of done came true.</p>
+                ) : vm.project.target ? (
+                  <p><b>🎯 Target</b> {vm.project.target}
+                    {vm.project.sprint && <SprintTag deadline={vm.project.sprint.deadline} />}
+                  </p>
+                ) : (
+                  <p className="muted">A list. Give it a target and a definition of done to make it a project.</p>
+                )}
+                {vm.project.dod && <p><b>✅ Done when</b> {vm.project.dod}</p>}
+                {!vm.project.closedAt && (
+                  <div className="actions">
+                    <button className="ghost ok" onClick={() => setEditingProject(true)}>Edit</button>
+                    {isProject(vm.project) && (
+                      <button className={'ghost ok' + (armedClose ? ' armed' : '')} onClick={closeProject}>
+                        {armedClose ? 'Confirm: the definition of done is true' : 'Close project'}
+                      </button>
+                    )}
+                    {!vm.project.builtin && (
+                      <button className={'ghost' + (armedDelete ? ' armed' : '')} onClick={removeProject}>
+                        {armedDelete ? 'Confirm: tasks move to Inbox' : 'Delete'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {vm.closed && (
+              <div className="proud">
+                {vm.closed.length === 0 && <div className="empty"><b>Nothing yet</b>Closed projects will show up here, by year.</div>}
+                {[...new Set(vm.closed.map(p => new Date(p.closedAt!).getFullYear()))].map(year => (
+                  <section key={year}>
+                    <h3>{year}</h3>
+                    {vm.closed!.filter(p => new Date(p.closedAt!).getFullYear() === year).map(p => (
+                      <article key={p.id}>
+                        <b>{p.name}</b>
+                        <span>🎯 {p.target}</span>
+                        <span>✅ {p.dod}</span>
+                      </article>
+                    ))}
+                  </section>
+                ))}
+              </div>
+            )}
 
             {!vm.noAdd && (
               <>
@@ -152,7 +216,7 @@ export function App() {
               </>
             )}
 
-            {!total && !vm.keepEmpty && vm.empty && status !== 'loading' ? (
+            {vm.closed ? null : !total && !vm.keepEmpty && vm.empty && status !== 'loading' ? (
               <div className="empty"><b>{vm.empty[0]}</b>{vm.empty[1]}</div>
             ) : (
               <div className="groups">
@@ -189,6 +253,16 @@ export function App() {
           onSave={t => { saveTask(t); closeEditor() }}
           onDelete={() => { deleteTask(editing.id); closeEditor(); showToast({ msg: 'Task deleted' }) }}
           onClose={closeEditor}
+        />
+      )}
+
+      {editingProject && vm.project && (
+        <ProjectEditor
+          key={vm.project.id}
+          project={vm.project}
+          projects={sortedProjects(data)}
+          onSave={p => { saveProject(p); closeProjectEditor() }}
+          onClose={closeProjectEditor}
         />
       )}
 

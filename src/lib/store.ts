@@ -1,23 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Data, Project, Task } from '../types'
 import { addDays, iso, norm } from './dates'
+import { BUILTINS, COLORS, normalizeProject, withProject, withoutProject } from './projects'
+
+export { COLORS, newProject } from './projects'
 
 /** Key of the pre-backend localStorage store; its data is migrated once, then removed. */
 const LEGACY_KEY = 'azenda-v1'
-
-export const COLORS = ['#2F6B4F', '#3A6FD8', '#DD8209', '#B0487F', '#7A5BD0', '#1F8A8A', '#C2402F', '#6B7A2F']
 
 const projKey = (s: string) => norm(s).replace(/\s+/g, '')
 
 export const findProject = (projects: Record<string, Project>, name: string) =>
   Object.values(projects).find(p => projKey(p.name) === projKey(name))
-
-export const newProject = (name: string, existing: number): Project => ({
-  id: crypto.randomUUID(),
-  name,
-  color: COLORS[existing % COLORS.length],
-  order: Date.now(),
-})
 
 function seedWelcome(): Data {
   const pid = 'welcome'
@@ -35,7 +29,7 @@ function seedWelcome(): Data {
     const id = `welcome-${i}`
     tasks[id] = { id, title, desc: '', due, priority, labels, project: pid, done: false, doneAt: null, created: now + i }
   })
-  return { tasks, projects: { [pid]: { id: pid, name: 'Welcome', color: COLORS[0], order: 0 } } }
+  return { tasks, projects: { [pid]: normalizeProject({ id: pid, name: 'Welcome', color: COLORS[0], order: 0 }) } }
 }
 
 function loadLegacy(): Data | null {
@@ -58,18 +52,36 @@ const put = (kind: 'tasks' | 'projects', item: Task | Project) =>
 
 const isEmpty = (d: Data) => !Object.keys(d.tasks).length && !Object.keys(d.projects).length
 
+const normalize = (d: Data): Data =>
+  ({ tasks: d.tasks, projects: Object.fromEntries(Object.entries(d.projects).map(([k, p]) => [k, normalizeProject(p)])) })
+
+/**
+ * Creates the built-in containers that are missing and returns the data with them.
+ * Fixed ids keep this idempotent when two loads race (React strict mode runs effects twice).
+ */
+async function withBuiltins(d: Data): Promise<Data> {
+  const missing = BUILTINS.filter(b => !Object.values(d.projects).some(p => p.builtin === b.builtin))
+  const projects = { ...d.projects }
+  await Promise.all(missing.map(b => {
+    const p = normalizeProject({ id: `builtin-${b.builtin}`, name: b.name, color: COLORS[0], order: b.order, builtin: b.builtin })
+    projects[p.id] = p
+    return put('projects', p)
+  }))
+  return { ...d, projects }
+}
+
 /** Loads the server data; an empty server is filled from the legacy local store or the welcome examples. */
 async function loadInitial(): Promise<Data> {
-  const server = (await (await api('/data')).json()) as Data
-  if (!isEmpty(server)) return server
+  const server = normalize((await (await api('/data')).json()) as Data)
+  if (!isEmpty(server)) return withBuiltins(server)
   const legacy = loadLegacy()
-  const initial = legacy ?? seedWelcome()
+  const initial = normalize(legacy ?? seedWelcome())
   await Promise.all([
     ...Object.values(initial.projects).map(p => put('projects', p)),
     ...Object.values(initial.tasks).map(t => put('tasks', t)),
   ])
   if (legacy) try { localStorage.removeItem(LEGACY_KEY) } catch { /* ignore */ }
-  return initial
+  return withBuiltins(initial)
 }
 
 /**
@@ -108,19 +120,20 @@ export function useStore() {
     sync(api(`/tasks/${id}`, { method: 'DELETE' }))
   }, [])
 
+  /** Saves the container; if it is in sprint, any other sprint ends (one at a time). */
   const saveProject = useCallback((p: Project) => {
-    setData(d => ({ ...d, projects: { ...d.projects, [p.id]: p } }))
-    sync(put('projects', p))
+    const projects = withProject(latest.current.projects, p)
+    const changed = Object.values(projects).filter(x => x !== latest.current.projects[x.id])
+    setData(d => ({ ...d, projects }))
+    for (const x of changed) sync(put('projects', x))
   }, [])
 
-  /** Deletes the project and moves its tasks to the Inbox (the server does the same). */
+  /** Deletes the container: tasks move to the Inbox, children to its parent (the server does the same). */
   const deleteProject = useCallback((id: string) => {
-    setData(d => {
-      const { [id]: _removed, ...projects } = d.projects
-      const tasks = Object.fromEntries(Object.entries(d.tasks).map(([k, t]) =>
-        [k, t.project === id ? { ...t, project: null } : t]))
-      return { tasks, projects }
-    })
+    setData(d => ({
+      tasks: Object.fromEntries(Object.entries(d.tasks).map(([k, t]) => [k, t.project === id ? { ...t, project: null } : t])),
+      projects: withoutProject(d.projects, id),
+    }))
     sync(api(`/projects/${id}`, { method: 'DELETE' }))
   }, [])
 

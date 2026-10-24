@@ -15,11 +15,27 @@ export interface Task {
   created: number
 }
 
+/**
+ * A container of tasks, nestable. With a target and a definition of done it is a
+ * project; without them it is a list, a scoped group of tasks.
+ */
 export interface Project {
   id: string
   name: string
   color: string
   order: number
+  /** Parent container id; null at the top level. */
+  parent: string | null
+  /** The measurable result (e.g. "2 interviews scheduled"). */
+  target: string | null
+  /** What must be true to close the project. */
+  dod: string | null
+  /** Set while the project is in sprint: the only place a target has a deadline (YYYY-MM-DD). */
+  sprint: { deadline: string } | null
+  /** When the project was closed and moved to Proud of. */
+  closedAt: number | null
+  /** Built-in containers cannot be deleted. */
+  builtin: 'someday' | 'admin' | null
 }
 
 export interface Data {
@@ -27,4 +43,4 @@ export interface Data {
   projects: Record<string, Project>
 }
 
-export type View = 'inbox' | 'today' | 'upcoming' | 'done' | `p:${string}` | `l:${string}`
+export type View = 'inbox' | 'today' | 'upcoming' | 'done' | 'proud' | `p:${string}` | `l:${string}`

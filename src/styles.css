@@ -46,6 +46,9 @@ aside{background:var(--side);border-right:1px solid var(--line);display:flex;fle
 .nav-item .count{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .nav-item .dot{width:10px;height:10px;border-radius:50%;margin-inline:3px}
 .nav-item .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-item .heart{background:none;color:var(--p1);font-size:11px;line-height:10px;text-align:center}
+.tag{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:99px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.tag.late{background:color-mix(in srgb,var(--danger) 15%,transparent);color:var(--danger)}
 .side-head{display:flex;align-items:center;justify-content:space-between;padding:0 10px 4px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .icon-btn{width:28px;height:28px;display:grid;place-items:center;border-radius:7px;color:var(--muted)}
 .icon-btn:hover{background:var(--hover);color:var(--ink)}
@@ -66,6 +69,22 @@ main{overflow-y:auto;min-width:0}
 .ghost{padding:6px 12px;border-radius:8px;color:var(--muted);font-size:13px;border:1px solid var(--line)}
 .ghost:hover{color:var(--danger);border-color:var(--danger)}
 .ghost.armed{background:var(--danger);color:#fff;border-color:var(--danger)}
+.ghost.ok:hover{color:var(--accent);border-color:var(--accent)}
+.ghost.ok.armed{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.phead p{margin:0;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.phead p b{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.phead .muted{color:var(--muted);font-size:14px}
+.phead .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+.sheet .hint{margin:0}
+
+.proud{display:flex;flex-direction:column;gap:10px}
+.proud h3{font-family:var(--display);font-weight:600;font-size:15px;margin:12px 0 0;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.proud article{padding:10px 4px;border-bottom:1px solid var(--line)}
+.proud article b{display:block;margin-bottom:2px}
+.proud article span{color:var(--muted);font-size:13px;display:block}
 
 .quick{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 10px 10px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .quick:focus-within{border-color:var(--accent)}

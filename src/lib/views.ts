@@ -1,5 +1,6 @@
 import type { Data, Project, Task, View } from '../types'
 import { addDays, fmtLong, iso } from './dates'
+import { isOpen } from './projects'
 
 export interface Group {
   label?: string
@@ -15,6 +16,8 @@ export interface ViewModel {
   groups: Group[]
   empty?: [string, string]
   project?: Project
+  /** Closed projects, for the Proud of view. */
+  closed?: Project[]
   noAdd?: boolean
   keepEmpty?: boolean
 }
@@ -24,8 +27,11 @@ const cmp = (a: Task, b: Task) =>
 
 export const openTasks = (d: Data) => Object.values(d.tasks).filter(t => !t.done)
 export const inInbox = (d: Data) => (t: Task) => !t.project || !d.projects[t.project]
+/** Open containers, in sidebar order. */
 export const sortedProjects = (d: Data) =>
-  Object.values(d.projects).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
+  Object.values(d.projects).filter(isOpen).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
+export const closedProjects = (d: Data) =>
+  Object.values(d.projects).filter(p => !isOpen(p)).sort((a, b) => (b.closedAt ?? 0) - (a.closedAt ?? 0))
 
 export function buildView(view: View, d: Data, now = new Date()): ViewModel {
   const open = openTasks(d)
@@ -59,10 +65,13 @@ export function buildView(view: View, d: Data, now = new Date()): ViewModel {
     const done = Object.values(d.tasks).filter(t => t.done).sort((a, b) => (b.doneAt ?? 0) - (a.doneAt ?? 0)).slice(0, 200)
     return { title: 'Completed', groups: [{ items: done }], noAdd: true, empty: ['Nothing yet', 'Completed tasks will show up here.'] }
   }
+  if (view === 'proud') {
+    return { title: 'Proud of', sub: 'Projects whose definition of done came true', groups: [], closed: closedProjects(d), noAdd: true, keepEmpty: true }
+  }
   if (view.startsWith('p:')) {
     const p = d.projects[view.slice(2)]
     if (!p) return buildView('inbox', d, now)
-    return { title: p.name, project: p, groups: [{ items: open.filter(t => t.project === p.id).sort(cmp) }], empty: ['Empty project', 'Add the first task above.'] }
+    return { title: p.name, project: p, groups: [{ items: open.filter(t => t.project === p.id).sort(cmp) }], noAdd: !isOpen(p), empty: ['Empty', 'Add the first task above.'] }
   }
   const l = view.slice(2)
   return { title: '@' + l, groups: [{ items: open.filter(t => t.labels.includes(l)).sort(cmp) }], empty: ['No tasks', 'No open tasks with this label.'] }

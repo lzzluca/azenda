@@ -4,7 +4,8 @@ import { openDb } from './db.ts'
 
 const task = (id: string, project: string | null): Task =>
   ({ id, title: id, desc: '', due: null, priority: 4, labels: [], project, done: false, doneAt: null, created: 1 })
-const project = (id: string): Project => ({ id, name: id, color: '#000', order: 1 })
+const project = (id: string, parent: string | null = null): Project =>
+  ({ id, name: id, color: '#000', order: 1, parent, target: null, dod: null, sprint: null, closedAt: null, builtin: null })
 
 describe('db', () => {
   it('starts empty', () => {
@@ -20,13 +21,16 @@ describe('db', () => {
     expect(db.all().tasks).toEqual({})
   })
 
-  it('deleting a project moves its tasks to the Inbox', () => {
+  it('deleting a container moves its tasks to the Inbox and its children up', () => {
     const db = openDb()
-    db.saveProject(project('p'))
+    db.saveProject(project('root'))
+    db.saveProject(project('p', 'root'))
+    db.saveProject(project('child', 'p'))
     db.saveTask(task('in', 'p'))
     db.saveTask(task('out', null))
     db.deleteProject('p')
-    expect(db.all().projects).toEqual({})
+    expect(Object.keys(db.all().projects).sort()).toEqual(['child', 'root'])
+    expect(db.all().projects.child.parent).toBe('root')
     expect(db.all().tasks.in.project).toBeNull()
     expect(db.all().tasks.out.project).toBeNull()
   })

@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import type { Data, View } from '../types'
 import { iso } from '../lib/dates'
-import { inInbox, openTasks, sortedProjects } from '../lib/views'
+import { childrenOf, isProject } from '../lib/projects'
+import { closedProjects, inInbox, openTasks, sortedProjects } from '../lib/views'
 import { DoneIcon, InboxIcon, LabelIcon, PlusIcon, TodayIcon, UpcomingIcon } from './icons'
 
 interface Props {
@@ -20,13 +21,22 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
   const projects = sortedProjects(data)
   const labels = [...new Set(open.flatMap(t => t.labels))].sort()
 
-  const item = (key: View, icon: ReactNode, label: string, count = 0) => (
-    <button key={key} className={'nav-item' + (view === key ? ' active' : '')} onClick={() => onView(key)}>
+  const item = (key: View, icon: ReactNode, label: string, count = 0, extra?: ReactNode, depth = 0) => (
+    <button key={key} className={'nav-item' + (view === key ? ' active' : '')} style={depth ? { paddingLeft: 10 + depth * 16 } : undefined} onClick={() => onView(key)}>
       {icon}
       <span className="name">{label}</span>
+      {extra}
       {count > 0 && <span className="count">{count}</span>}
     </button>
   )
+
+  /** Containers as a tree: each one followed by its children, indented. */
+  const tree = (parent: string | null, depth: number): ReactNode[] =>
+    childrenOf(projects, parent).flatMap(p => [
+      item(`p:${p.id}`, <span className="dot" style={{ background: p.color }} />, (isProject(p) ? '🎯 ' : '') + p.name,
+        open.filter(t => t.project === p.id).length, p.sprint && <span className="tag">sprint</span>, depth),
+      ...tree(p.id, depth + 1),
+    ])
 
   return (
     <aside aria-label="Navigation">
@@ -41,8 +51,8 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
 
       <div>
         <div className="side-head">
-          Projects
-          <button className="icon-btn" aria-label="New project" title="New project" onClick={() => setAdding(a => !a)}><PlusIcon /></button>
+          Projects & lists
+          <button className="icon-btn" aria-label="New list" title="New list" onClick={() => setAdding(a => !a)}><PlusIcon /></button>
         </div>
         {adding && (
           <form className="side-form" onSubmit={e => {
@@ -54,16 +64,15 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
           }}>
             <input
               id="proj-name" autoFocus autoComplete="off" maxLength={60}
-              placeholder="Project name, then Enter"
+              placeholder="List name, then Enter"
               value={name} onChange={e => setName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Escape') setAdding(false) }}
             />
           </form>
         )}
         <nav className="nav">
-          {projects.length
-            ? projects.map(p => item(`p:${p.id}`, <span className="dot" style={{ background: p.color }} />, p.name, open.filter(t => t.project === p.id).length))
-            : <div className="side-empty">No projects yet</div>}
+          {tree(null, 0)}
+          {item('proud', <span className="dot heart">❤</span>, 'Proud of', closedProjects(data).length)}
         </nav>
       </div>
 
