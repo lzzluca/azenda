@@ -53,15 +53,20 @@ describe('mcp', () => {
     expect(db.all().tasks.drop).toBeUndefined()
   })
 
-  it('refuses a sprint on a list and allows several sprints at once', async () => {
+  it('dates projects only, with a start never alone or after the end, and moves them out of Someday', async () => {
     const { db, call } = await connect()
+    db.saveProject(project('builtin-someday', { builtin: 'someday' }))
     db.saveProject(project('list'))
     db.saveProject(project('a', { target: 't', dod: 'd', end: '2026-11-01' }))
-    db.saveProject(project('b', { target: 't', dod: 'd' }))
-    expect((await call('update_project', { id: 'list', sprintDeadline: '2026-11-01' })).error).toBe(true)
-    await call('update_project', { id: 'b', sprintDeadline: '2026-12-01' })
+    db.saveProject(project('b', { target: 't', dod: 'd', parent: 'builtin-someday' }))
+    expect((await call('update_project', { id: 'list', end: '2026-11-01' })).error).toBe(true)
+    expect((await call('update_project', { id: 'b', start: '2026-11-01' })).error).toBe(true)
+    expect((await call('update_project', { id: 'b', start: '2026-12-02', end: '2026-12-01' })).error).toBe(true)
+    await call('update_project', { id: 'b', start: '2026-11-10', end: '2026-12-01' })
     expect(db.all().projects.a.end).toBe('2026-11-01')
-    expect(db.all().projects.b.end).toBe('2026-12-01')
+    expect(db.all().projects.b).toMatchObject({ start: '2026-11-10', end: '2026-12-01', parent: null })
+    await call('update_project', { id: 'b', end: null })
+    expect(db.all().projects.b).toMatchObject({ start: null, end: null, parent: 'builtin-someday' })
   })
 
   it('offers the review prompt', async () => {

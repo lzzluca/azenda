@@ -11,12 +11,16 @@ const DAY = 864e5
 const METHOD = `aZenda is a task manager with a method built in. You run its reviews.
 
 Containers nest. One with a target and a definition of done is a project; without them it is a
-list. A project in sprint has a deadline for its target: the only place a target gets one.
-Several projects can be in sprint at once. Tasks can be dated anywhere. Labels: "next" = do it in the next free slot, "radar" = soon but not clear when.
+list. A project can have an end (its target's deadline: the only place a target gets one) and an
+optional start. With an end it is active, or planned while its start is in the future. Several
+projects can be active at once. Top-level projects without dates live in Someday maybe: giving
+one an end moves it to the top level, removing it moves it back. Sub-projects stay with their
+parent. Tasks can be dated anywhere. Labels: "next" = do it in the next free slot, "radar" =
+soon but not clear when.
 
 The decision queue (get_decisions) lists items that matured a rule: Inbox for ${RULES.inbox} days,
 untouched in a list for ${RULES.stale} days, rescheduled ${RULES.reschedules} times, on Radar for
-${RULES.radar} days, sprint deadline passed. For each one propose ONE action and ask before
+${RULES.radar} days, target deadline passed. For each one propose ONE action and ask before
 applying it with decide. Deleting is a first-class option. Rescheduling escalates instead of
 repeating: date -> next -> radar -> no date.
 
@@ -55,7 +59,7 @@ export function createMcpServer(db: Db) {
   }))
 
   server.registerTool('get_overview', {
-    description: 'Containers (projects and lists) with open task counts, which project is in sprint, and the rule thresholds.',
+    description: 'Containers (projects and lists) with open task counts, project dates (start, end) and the rule thresholds.',
   }, () => {
     const d = db.all()
     const open = Object.values(d.tasks).filter(t => !t.done)
@@ -157,22 +161,24 @@ export function createMcpServer(db: Db) {
   })
 
   server.registerTool('update_project', {
-    description: 'Change a container. Setting target and dod makes it a project; sprintDeadline starts or moves its sprint; sprintDeadline: null ends it. Targets must be measurable.',
+    description: 'Change a container. Setting target and dod makes it a project; end (YYYY-MM-DD) is the target\'s deadline and start is optional, never after the end; end: null removes both. Targets must be measurable.',
     inputSchema: {
       id: z.string(), name: z.string().optional(), target: z.string().nullable().optional(), dod: z.string().nullable().optional(),
-      parent: z.string().nullable().optional(), sprintDeadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      parent: z.string().nullable().optional(),
+      start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(), end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
     },
-  }, ({ id, name, target, dod, parent, sprintDeadline }) => {
+  }, ({ id, name, target, dod, parent, start, end }) => {
     const p = db.all().projects[id]
     if (!p) return fail(`No container ${id}`)
     const next: Project = {
       ...p, ...(name !== undefined && { name }), ...(target !== undefined && { target }), ...(dod !== undefined && { dod }), ...(parent !== undefined && { parent }),
     }
-    if (sprintDeadline === null) next.end = null
-    else if (sprintDeadline) {
-      if (!isProject(next)) return fail('A list cannot enter a sprint: set a target and a definition of done first')
-      next.end = sprintDeadline
-    }
+    if (start !== undefined) next.start = start
+    if (end !== undefined) next.end = end
+    if (!next.end) next.start = null
+    if (next.end && !isProject(next)) return fail('A list has no dates: set a target and a definition of done first')
+    if (start && !next.end) return fail('A start needs an end')
+    if (next.start && next.end && next.start > next.end) return fail('The start cannot be after the end')
     saveProject(next)
     return json(next)
   })
