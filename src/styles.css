@@ -121,6 +121,8 @@ main{overflow-y:auto;min-width:0}
 .plain{padding:8px 14px;border-radius:8px;color:var(--muted)}
 .plain:hover{background:var(--hover);color:var(--ink)}
 
+.banner{position:fixed;z-index:50;top:0;left:0;right:0;padding:8px 16px;background:#C2402F;color:#fff;font-size:14px;text-align:center}
+.banner code{font-family:ui-monospace,monospace}
 .toast{position:fixed;z-index:40;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 14px 10px 16px;border-radius:10px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:14px;max-width:calc(100% - 32px)}
 .toast button{color:var(--accent-soft);font-weight:600}
 .loading{padding:48px 0;color:var(--muted);text-align:center}

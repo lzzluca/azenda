@@ -76,7 +76,7 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
         </nav>
       </div>
 
-      <div className="status"><i /><span>Saved in this browser</span></div>
+      <div className="status"><i /><span>Saved on the server</span></div>
     </aside>
   )
 }

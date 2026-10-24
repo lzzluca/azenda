@@ -18,7 +18,7 @@ function initialView(): View {
 }
 
 export function App() {
-  const { data, saveTask, patchTask, deleteTask, saveProject, deleteProject } = useStore()
+  const { data, status, saveTask, patchTask, deleteTask, saveProject, deleteProject } = useStore()
   const [view, setViewState] = useState<View>(initialView)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [navOpen, setNavOpen] = useState(false)
@@ -152,7 +152,7 @@ export function App() {
               </>
             )}
 
-            {!total && !vm.keepEmpty && vm.empty ? (
+            {!total && !vm.keepEmpty && vm.empty && status !== 'loading' ? (
               <div className="empty"><b>{vm.empty[0]}</b>{vm.empty[1]}</div>
             ) : (
               <div className="groups">
@@ -193,6 +193,7 @@ export function App() {
       )}
 
       {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
+      {status === 'offline' && <div className="banner">Can't reach the server. Changes are not being saved — run <code>npm run dev:server</code> and reload.</div>}
     </>
   )
 }
