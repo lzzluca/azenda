@@ -13,6 +13,12 @@ export interface Task {
   done: boolean
   doneAt: number | null
   created: number
+  /** Last change, for the "untouched since" rules. */
+  updated: number
+  /** Times the due date was moved; past a threshold it becomes a decision. */
+  reschedules: number
+  /** When the Radar label was added, or null. */
+  radarSince: number | null
 }
 
 /**
@@ -31,7 +37,7 @@ export interface Project {
   /** What must be true to close the project. */
   dod: string | null
   /** Set while the project is in sprint: the only place a target has a deadline (YYYY-MM-DD). */
-  sprint: { deadline: string } | null
+  sprint: { deadline: string; extensions?: { from: string; to: string; reason: string }[] } | null
   /** When the project was closed and moved to Proud of. */
   closedAt: number | null
   /** Built-in containers cannot be deleted. */
@@ -43,4 +49,4 @@ export interface Data {
   projects: Record<string, Project>
 }
 
-export type View = 'inbox' | 'today' | 'upcoming' | 'done' | 'proud' | `p:${string}` | `l:${string}`
+export type View = 'inbox' | 'today' | 'upcoming' | 'done' | 'proud' | 'review' | `p:${string}` | `l:${string}`

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Data, Project, Task } from '../types'
 import { addDays, iso, norm } from './dates'
 import { BUILTINS, COLORS, normalizeProject, withProject, withoutProject } from './projects'
+import { normalizeTask, prepareSave } from './tasks'
 
 export { COLORS, newProject } from './projects'
 
@@ -27,7 +28,7 @@ function seedWelcome(): Data {
   const tasks: Record<string, Task> = {}
   rows.forEach(([title, due, priority, labels], i) => {
     const id = `welcome-${i}`
-    tasks[id] = { id, title, desc: '', due, priority, labels, project: pid, done: false, doneAt: null, created: now + i }
+    tasks[id] = normalizeTask({ id, title, desc: '', due, priority, labels, project: pid, done: false, doneAt: null, created: now + i })
   })
   return { tasks, projects: { [pid]: normalizeProject({ id: pid, name: 'Welcome', color: COLORS[0], order: 0 }) } }
 }
@@ -52,8 +53,10 @@ const put = (kind: 'tasks' | 'projects', item: Task | Project) =>
 
 const isEmpty = (d: Data) => !Object.keys(d.tasks).length && !Object.keys(d.projects).length
 
-const normalize = (d: Data): Data =>
-  ({ tasks: d.tasks, projects: Object.fromEntries(Object.entries(d.projects).map(([k, p]) => [k, normalizeProject(p)])) })
+const normalize = (d: Data): Data => ({
+  tasks: Object.fromEntries(Object.entries(d.tasks).map(([k, t]) => [k, normalizeTask(t)])),
+  projects: Object.fromEntries(Object.entries(d.projects).map(([k, p]) => [k, normalizeProject(p)])),
+})
 
 /**
  * Creates the built-in containers that are missing and returns the data with them.
@@ -102,7 +105,8 @@ export function useStore() {
 
   const sync = (req: Promise<unknown>) => { req.catch(e => { console.error(e); setStatus('offline') }) }
 
-  const saveTask = useCallback((t: Task) => {
+  const saveTask = useCallback((task: Task) => {
+    const t = prepareSave(latest.current.tasks[task.id], task)
     setData(d => ({ ...d, tasks: { ...d.tasks, [t.id]: t } }))
     sync(put('tasks', t))
   }, [])

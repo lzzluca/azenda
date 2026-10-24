@@ -65,6 +65,9 @@ export function buildView(view: View, d: Data, now = new Date()): ViewModel {
     const done = Object.values(d.tasks).filter(t => t.done).sort((a, b) => (b.doneAt ?? 0) - (a.doneAt ?? 0)).slice(0, 200)
     return { title: 'Completed', groups: [{ items: done }], noAdd: true, empty: ['Nothing yet', 'Completed tasks will show up here.'] }
   }
+  if (view === 'review') {
+    return { title: 'Review', sub: 'Every pending decision, grouped by container. Fifteen minutes.', groups: [], noAdd: true, keepEmpty: true }
+  }
   if (view === 'proud') {
     return { title: 'Proud of', sub: 'Projects whose definition of done came true', groups: [], closed: closedProjects(d), noAdd: true, keepEmpty: true }
   }

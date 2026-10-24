@@ -3,7 +3,7 @@ import type { Project, Task } from '../src/types.ts'
 import { openDb } from './db.ts'
 
 const task = (id: string, project: string | null): Task =>
-  ({ id, title: id, desc: '', due: null, priority: 4, labels: [], project, done: false, doneAt: null, created: 1 })
+  ({ id, title: id, desc: '', due: null, priority: 4, labels: [], project, done: false, doneAt: null, created: 1, updated: 1, reschedules: 0, radarSince: null })
 const project = (id: string, parent: string | null = null): Project =>
   ({ id, name: id, color: '#000', order: 1, parent, target: null, dod: null, sprint: null, closedAt: null, builtin: null })
 

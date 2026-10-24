@@ -2,14 +2,22 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Task, View } from './types'
 import { dayDiff, dueInfo, iso } from './lib/dates'
 import type { Parsed } from './lib/parse'
+import { decisions, type Decision } from './lib/decisions'
 import { isProject } from './lib/projects'
 import { findProject, newProject, useStore } from './lib/store'
+import { dropLabel, normalizeTask, RADAR, toNext, toRadar } from './lib/tasks'
 import { buildView, sortedProjects } from './lib/views'
 import { Sidebar } from './components/Sidebar'
 import { QuickAdd } from './components/QuickAdd'
 import { TaskItem } from './components/TaskItem'
 import { TaskEditor } from './components/TaskEditor'
 import { ProjectEditor } from './components/ProjectEditor'
+import { DecisionCard, type DecisionAction } from './components/DecisionCard'
+import { ReviewTimer } from './components/ReviewTimer'
+
+/** Decisions shown in Today per day; past REVIEW_AT pending, a review session is offered. */
+const DAILY = 3
+const REVIEW_AT = 10
 import { Toast, type ToastData } from './components/Toast'
 import { MenuIcon } from './components/icons'
 
@@ -32,7 +40,7 @@ export function App() {
   const [navOpen, setNavOpen] = useState(false)
   const [armedDelete, setArmedDelete] = useState(false)
   const [armedClose, setArmedClose] = useState(false)
-  const [editingProject, setEditingProject] = useState(false)
+  const [editingProject, setEditingProject] = useState<string | null>(null)
   const [toast, setToast] = useState<ToastData | null>(null)
   const [, setToday] = useState(() => iso(new Date()))
   const toastTimer = useRef<number | undefined>(undefined)
@@ -41,6 +49,8 @@ export function App() {
 
   const vm = buildView(view, data)
   const editing = editingId ? data.tasks[editingId] : undefined
+  const projectEditing = editingProject ? data.projects[editingProject] : undefined
+  const pending = decisions(data)
 
   const showToast = useCallback((t: ToastData) => {
     setToast(t)
@@ -100,10 +110,10 @@ export function App() {
     const labels = [...r.labels]
     if (view.startsWith('l:') && !labels.includes(view.slice(2))) labels.push(view.slice(2))
     const due = r.due ?? (view === 'today' ? iso(new Date()) : null)
-    const t: Task = {
+    const t: Task = normalizeTask({
       id: crypto.randomUUID(), title: r.title, desc: '', due, priority: r.priority,
       labels, project, done: false, doneAt: null, created: Date.now(),
-    }
+    })
     saveTask(t)
 
     const next = buildView(view, { projects, tasks: { ...data.tasks, [t.id]: t } })
@@ -138,8 +148,36 @@ export function App() {
     showToast({ msg: `"${vm.project.name}" is done. Proud of it.` })
   }
 
+  /** Applies the choice made on a decision card. */
+  const act = (d: Decision, a: DecisionAction) => {
+    if (d.kind === 'deadline') {
+      const p = d.project
+      if (a === 'newTarget') setEditingProject(p.id)
+      else if (a === 'close') { saveProject({ ...p, sprint: null, closedAt: Date.now() }); showToast({ msg: `"${p.name}" is done. Proud of it.` }) }
+      else if (typeof a === 'object' && p.sprint) {
+        const extensions = [...(p.sprint.extensions ?? []), { from: p.sprint.deadline, to: a.extend.deadline, reason: a.extend.reason }]
+        saveProject({ ...p, sprint: { deadline: a.extend.deadline, extensions } })
+      }
+      return
+    }
+    const t = d.task
+    const builtin = (b: 'someday' | 'admin') => Object.values(data.projects).find(p => p.builtin === b)?.id ?? null
+    if (a === 'keep') saveTask({ ...t, reschedules: 0, radarSince: t.labels.includes(RADAR) ? Date.now() : null })
+    else if (a === 'next') saveTask(toNext(t))
+    else if (a === 'radar') saveTask(toRadar(t))
+    else if (a === 'undate') saveTask({ ...t, due: null, reschedules: 0 })
+    else if (a === 'dropRadar') saveTask(dropLabel(t, RADAR))
+    else if (a === 'someday') saveTask({ ...t, project: builtin('someday') })
+    else if (a === 'admin') saveTask({ ...t, project: builtin('admin') })
+    else if (a === 'delete') { deleteTask(t.id); showToast({ msg: 'Task deleted' }) }
+  }
+
+  const card = (d: Decision) => <DecisionCard key={d.kind + d.id} decision={d} projects={data.projects} onAct={act} />
+  const containerName = (d: Decision) =>
+    d.kind === 'deadline' ? 'Projects' : d.task.project ? data.projects[d.task.project]?.name ?? 'Inbox' : 'Inbox'
+
   const closeEditor = useCallback(() => setEditingId(null), [])
-  const closeProjectEditor = useCallback(() => setEditingProject(false), [])
+  const closeProjectEditor = useCallback(() => setEditingProject(null), [])
   const total = vm.groups.reduce((n, g) => n + g.items.length, 0)
 
   return (
@@ -173,7 +211,7 @@ export function App() {
                 {vm.project.dod && <p><b>✅ Done when</b> {vm.project.dod}</p>}
                 {!vm.project.closedAt && (
                   <div className="actions">
-                    <button className="ghost ok" onClick={() => setEditingProject(true)}>Edit</button>
+                    <button className="ghost ok" onClick={() => setEditingProject(vm.project!.id)}>Edit</button>
                     {isProject(vm.project) && (
                       <button className={'ghost ok' + (armedClose ? ' armed' : '')} onClick={closeProject}>
                         {armedClose ? 'Confirm: the definition of done is true' : 'Close project'}
@@ -187,6 +225,31 @@ export function App() {
                   </div>
                 )}
               </div>
+            )}
+
+            {view === 'today' && pending.length > 0 && (
+              <section className="decisions">
+                <h3>Decisions <small>{Math.min(DAILY, pending.length)} of {pending.length}</small>
+                  {pending.length > REVIEW_AT && <button className="plain" onClick={() => setView('review')}>Review all →</button>}
+                </h3>
+                {pending.slice(0, DAILY).map(card)}
+              </section>
+            )}
+
+            {view === 'review' && (
+              pending.length === 0
+                ? <div className="empty"><b>Nothing to decide</b>Every item has a home and a moment. Come back when the queue fills up.</div>
+                : (
+                  <div className="decisions">
+                    <ReviewTimer minutes={15} />
+                    {[...new Set(pending.map(containerName))].map(name => (
+                      <section key={name}>
+                        <h3>{name} <small>{pending.filter(d => containerName(d) === name).length}</small></h3>
+                        {pending.filter(d => containerName(d) === name).map(card)}
+                      </section>
+                    ))}
+                  </div>
+                )
             )}
 
             {vm.closed && (
@@ -216,7 +279,7 @@ export function App() {
               </>
             )}
 
-            {vm.closed ? null : !total && !vm.keepEmpty && vm.empty && status !== 'loading' ? (
+            {vm.closed || view === 'review' ? null : !total && !vm.keepEmpty && vm.empty && status !== 'loading' ? (
               <div className="empty"><b>{vm.empty[0]}</b>{vm.empty[1]}</div>
             ) : (
               <div className="groups">
@@ -256,10 +319,10 @@ export function App() {
         />
       )}
 
-      {editingProject && vm.project && (
+      {projectEditing && (
         <ProjectEditor
-          key={vm.project.id}
-          project={vm.project}
+          key={projectEditing.id}
+          project={projectEditing}
           projects={sortedProjects(data)}
           onSave={p => { saveProject(p); closeProjectEditor() }}
           onClose={closeProjectEditor}

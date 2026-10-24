@@ -3,7 +3,7 @@ import type { Data, Task } from '../src/types.ts'
 import { createApp } from './app.ts'
 import { openDb } from './db.ts'
 
-const task: Task = { id: 't1', title: 'Hello', desc: '', due: null, priority: 4, labels: [], project: null, done: false, doneAt: null, created: 1 }
+const task: Task = { id: 't1', title: 'Hello', desc: '', due: null, priority: 4, labels: [], project: null, done: false, doneAt: null, created: 1, updated: 1, reschedules: 0, radarSince: null }
 const json = (body: unknown) => ({ method: 'PUT', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } })
 
 describe('api', () => {

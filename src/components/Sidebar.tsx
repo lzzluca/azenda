@@ -1,7 +1,9 @@
 import { useState, type ReactNode } from 'react'
 import type { Data, View } from '../types'
 import { iso } from '../lib/dates'
+import { decisions } from '../lib/decisions'
 import { childrenOf, isProject } from '../lib/projects'
+import { NEXT, RADAR } from '../lib/tasks'
 import { closedProjects, inInbox, openTasks, sortedProjects } from '../lib/views'
 import { DoneIcon, InboxIcon, LabelIcon, PlusIcon, TodayIcon, UpcomingIcon } from './icons'
 
@@ -19,7 +21,8 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
   const open = openTasks(data)
   const td = iso(new Date())
   const projects = sortedProjects(data)
-  const labels = [...new Set(open.flatMap(t => t.labels))].sort()
+  const labels = [NEXT, RADAR, ...new Set(open.flatMap(t => t.labels).filter(l => l !== NEXT && l !== RADAR)).values()].sort()
+  const pending = decisions(data).length
 
   const item = (key: View, icon: ReactNode, label: string, count = 0, extra?: ReactNode, depth = 0) => (
     <button key={key} className={'nav-item' + (view === key ? ' active' : '')} style={depth ? { paddingLeft: 10 + depth * 16 } : undefined} onClick={() => onView(key)}>
@@ -47,6 +50,7 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
         {item('today', <TodayIcon />, 'Today', open.filter(t => t.due && t.due <= td).length)}
         {item('upcoming', <UpcomingIcon />, 'Next 7 days')}
         {item('done', <DoneIcon />, 'Completed')}
+        {item('review', <span className="dot q">?</span>, 'Review', pending)}
       </nav>
 
       <div>
@@ -79,9 +83,7 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
       <div>
         <div className="side-head">Labels</div>
         <nav className="nav">
-          {labels.length
-            ? labels.map(l => item(`l:${l}`, <LabelIcon />, l, open.filter(t => t.labels.includes(l)).length))
-            : <div className="side-empty">Type @label in a task</div>}
+          {labels.map(l => item(`l:${l}`, <LabelIcon />, l, open.filter(t => t.labels.includes(l)).length))}
         </nav>
       </div>
 
