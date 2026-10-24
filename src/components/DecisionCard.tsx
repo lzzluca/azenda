@@ -1,11 +1,6 @@
 import { useState } from 'react'
 import type { Project } from '../types'
-import type { Decision } from '../lib/decisions'
-
-export type DecisionAction =
-  | 'keep' | 'next' | 'radar' | 'undate' | 'delete' | 'someday' | 'admin' | 'dropRadar'
-  | 'newTarget' | 'close'
-  | { extend: { deadline: string; reason: string } }
+import type { Decision, DecisionAction } from '../lib/decisions'
 
 interface Props {
   decision: Decision

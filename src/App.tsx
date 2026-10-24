@@ -2,17 +2,17 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Task, View } from './types'
 import { dayDiff, dueInfo, iso } from './lib/dates'
 import type { Parsed } from './lib/parse'
-import { decisions, type Decision } from './lib/decisions'
+import { decisions, resolve, type Decision, type DecisionAction } from './lib/decisions'
 import { isProject } from './lib/projects'
 import { findProject, newProject, useStore } from './lib/store'
-import { dropLabel, normalizeTask, RADAR, toNext, toRadar } from './lib/tasks'
+import { normalizeTask } from './lib/tasks'
 import { buildView, sortedProjects } from './lib/views'
 import { Sidebar } from './components/Sidebar'
 import { QuickAdd } from './components/QuickAdd'
 import { TaskItem } from './components/TaskItem'
 import { TaskEditor } from './components/TaskEditor'
 import { ProjectEditor } from './components/ProjectEditor'
-import { DecisionCard, type DecisionAction } from './components/DecisionCard'
+import { DecisionCard } from './components/DecisionCard'
 import { ReviewTimer } from './components/ReviewTimer'
 
 /** Decisions shown in Today per day; past REVIEW_AT pending, a review session is offered. */
@@ -150,26 +150,13 @@ export function App() {
 
   /** Applies the choice made on a decision card. */
   const act = (d: Decision, a: DecisionAction) => {
-    if (d.kind === 'deadline') {
-      const p = d.project
-      if (a === 'newTarget') setEditingProject(p.id)
-      else if (a === 'close') { saveProject({ ...p, sprint: null, closedAt: Date.now() }); showToast({ msg: `"${p.name}" is done. Proud of it.` }) }
-      else if (typeof a === 'object' && p.sprint) {
-        const extensions = [...(p.sprint.extensions ?? []), { from: p.sprint.deadline, to: a.extend.deadline, reason: a.extend.reason }]
-        saveProject({ ...p, sprint: { deadline: a.extend.deadline, extensions } })
-      }
-      return
-    }
-    const t = d.task
-    const builtin = (b: 'someday' | 'admin') => Object.values(data.projects).find(p => p.builtin === b)?.id ?? null
-    if (a === 'keep') saveTask({ ...t, reschedules: 0, radarSince: t.labels.includes(RADAR) ? Date.now() : null })
-    else if (a === 'next') saveTask(toNext(t))
-    else if (a === 'radar') saveTask(toRadar(t))
-    else if (a === 'undate') saveTask({ ...t, due: null, reschedules: 0 })
-    else if (a === 'dropRadar') saveTask(dropLabel(t, RADAR))
-    else if (a === 'someday') saveTask({ ...t, project: builtin('someday') })
-    else if (a === 'admin') saveTask({ ...t, project: builtin('admin') })
-    else if (a === 'delete') { deleteTask(t.id); showToast({ msg: 'Task deleted' }) }
+    const r = resolve(d, a, data)
+    r.saveTasks.forEach(saveTask)
+    r.saveProjects.forEach(saveProject)
+    r.deleteTasks.forEach(deleteTask)
+    if (r.editProject) setEditingProject(r.editProject)
+    if (a === 'close') showToast({ msg: `"${d.kind === 'deadline' ? d.project.name : ''}" is done. Proud of it.` })
+    if (a === 'delete') showToast({ msg: 'Task deleted' })
   }
 
   const card = (d: Decision) => <DecisionCard key={d.kind + d.id} decision={d} projects={data.projects} onAct={act} />

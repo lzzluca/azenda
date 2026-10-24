@@ -1,4 +1,4 @@
-import type { Project } from '../types'
+import type { Project } from '../types.ts'
 
 export const COLORS = ['#2F6B4F', '#3A6FD8', '#DD8209', '#B0487F', '#7A5BD0', '#1F8A8A', '#C2402F', '#6B7A2F']
 

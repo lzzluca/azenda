@@ -1,9 +1,16 @@
+import { StreamableHTTPTransport } from '@hono/mcp'
 import { Hono } from 'hono'
 import type { Project, Task } from '../src/types.ts'
 import type { Db } from './db.ts'
+import { createMcpServer } from './mcp.ts'
 
-/** JSON API over the store. Single user, no auth: the client is trusted. */
-export function createApp(db: Db) {
+interface Options {
+  /** When set, /mcp requires `Authorization: Bearer <token>`. The JSON API stays open: it is for the app on the same machine. */
+  token?: string
+}
+
+/** JSON API over the store plus the MCP endpoint. Single user, no auth: the client is trusted. */
+export function createApp(db: Db, { token }: Options = {}) {
   const app = new Hono()
 
   app.get('/api/data', c => c.json(db.all()))
@@ -28,6 +35,14 @@ export function createApp(db: Db) {
   app.delete('/api/projects/:id', c => {
     db.deleteProject(c.req.param('id'))
     return c.body(null, 204)
+  })
+
+  const mcp = createMcpServer(db)
+  const transport = new StreamableHTTPTransport()
+  app.all('/mcp', async c => {
+    if (token && c.req.header('authorization') !== `Bearer ${token}`) return c.json({ error: 'unauthorized' }, 401)
+    if (!mcp.isConnected()) await mcp.connect(transport)
+    return transport.handleRequest(c)
   })
 
   return app

@@ -1,7 +1,8 @@
-import type { Data, Project, Task } from '../types'
-import { dayDiff, iso } from './dates'
-import { isOpen, isProject } from './projects'
-import { RADAR } from './tasks'
+// Imports carry the .ts extension so the server (plain Node) can share this module.
+import type { Data, Project, Task } from '../types.ts'
+import { dayDiff, iso } from './dates.ts'
+import { isOpen, isProject } from './projects.ts'
+import { dropLabel, RADAR, toNext, toRadar } from './tasks.ts'
 
 /** Days (or count) after which an item asks for a decision. Fixed for now, tuned by use. */
 export const RULES = { inbox: 15, stale: 60, reschedules: 2, radar: 30 }
@@ -43,4 +44,43 @@ export function decisions(d: Data, now = Date.now()): Decision[] {
   }
 
   return out.sort((a, b) => b.days - a.days)
+}
+
+export type DecisionAction =
+  | 'keep' | 'next' | 'radar' | 'undate' | 'delete' | 'someday' | 'admin' | 'dropRadar'
+  | 'newTarget' | 'close'
+  | { extend: { deadline: string; reason: string } }
+
+export interface Resolution {
+  saveTasks: Task[]
+  saveProjects: Project[]
+  deleteTasks: string[]
+  /** The caller should open the project editor on this project. */
+  editProject?: string
+}
+
+/** What a decision's action changes. Pure: the caller persists it. */
+export function resolve(d: Decision, a: DecisionAction, data: Data, now = Date.now()): Resolution {
+  const r: Resolution = { saveTasks: [], saveProjects: [], deleteTasks: [] }
+  if (d.kind === 'deadline') {
+    const p = data.projects[d.id] ?? d.project
+    if (a === 'newTarget') r.editProject = p.id
+    else if (a === 'close') r.saveProjects.push({ ...p, sprint: null, closedAt: now })
+    else if (typeof a === 'object' && p.sprint) {
+      const extensions = [...(p.sprint.extensions ?? []), { from: p.sprint.deadline, to: a.extend.deadline, reason: a.extend.reason }]
+      r.saveProjects.push({ ...p, sprint: { deadline: a.extend.deadline, extensions } })
+    }
+    return r
+  }
+  const t = data.tasks[d.id] ?? d.task
+  const builtin = (b: 'someday' | 'admin') => Object.values(data.projects).find(p => p.builtin === b)?.id ?? null
+  if (a === 'keep') r.saveTasks.push({ ...t, reschedules: 0, radarSince: t.labels.includes(RADAR) ? now : null })
+  else if (a === 'next') r.saveTasks.push(toNext(t))
+  else if (a === 'radar') r.saveTasks.push(toRadar(t))
+  else if (a === 'undate') r.saveTasks.push({ ...t, due: null, reschedules: 0 })
+  else if (a === 'dropRadar') r.saveTasks.push(dropLabel(t, RADAR))
+  else if (a === 'someday') r.saveTasks.push({ ...t, project: builtin('someday') })
+  else if (a === 'admin') r.saveTasks.push({ ...t, project: builtin('admin') })
+  else if (a === 'delete') r.deleteTasks.push(t.id)
+  return r
 }
