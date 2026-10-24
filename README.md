@@ -1,12 +1,12 @@
 # aZenda
 
-A task manager with an opinionated, enforced workflow. Most task apps are neutral
-containers that let backlogs grow into a mess; aZenda builds the method into the product:
-nothing becomes a project without a measurable target and a definition of done, a target
-gets its deadline only when its project enters the one active sprint, and every item in a
-work queue has a first step.
+A task manager with a method built in and an assistant that runs your reviews. Most task
+apps are neutral containers that let backlogs grow into a mess; aZenda turns stale items,
+repeated reschedules and missed deadlines into small daily decisions, keeps one sprint
+active at a time, and exposes its data to your own AI assistant through MCP so the
+review gets done.
 
-**Status:** the base task manager works today (see [Features](#features)). The enforced
+**Status:** the base task manager works today (see [Features](#features)). The guided
 workflow is what gets built next, step by step, as described in [ROADMAP.md](ROADMAP.md).
 
 React 19 + TypeScript + Vite; data lives in the browser's `localStorage`.
@@ -32,7 +32,7 @@ npm run build    # type-check + production build in dist/
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the breakdown of the enforced workflow and for ideas to
+See [ROADMAP.md](ROADMAP.md) for the breakdown of the guided workflow and for ideas to
 come back to.
 
 ## Structure
