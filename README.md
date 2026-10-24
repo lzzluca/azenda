@@ -26,6 +26,19 @@ Environment: `PORT` (default 3001), `AZENDA_DB` (default `server/data/azenda.db`
 `AZENDA_TOKEN` (when set, the MCP endpoint requires `Authorization: Bearer <token>`).
 Data from the previous `localStorage` version is migrated to the server on first load.
 
+## Import from Todoist
+
+```sh
+TODOIST_TOKEN=... npm run import:todoist
+```
+
+One-shot and repeatable (rows keep ids derived from the Todoist ids, so a second run updates
+instead of duplicating). Open tasks and non-archived projects come over with nesting, dates,
+priorities and labels; a project named like "someday" or "admin" maps to the built-in container
+of that name; a project's `* 🎯 TARGET: …` and `* ✅ DoD: …` tasks become its target and
+definition of done. Completed tasks, sections, comments and subtask nesting are not imported.
+Old items land in the decision queue, which doubles as the first review.
+
 ## Assistant (MCP)
 
 The server exposes an MCP endpoint at `http://localhost:3001/mcp` (Streamable HTTP), so your own

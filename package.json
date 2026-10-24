@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "node --watch server/index.ts",
+    "import:todoist": "node server/import-todoist.ts",
     "build": "tsc && tsc -p tsconfig.server.json && vite build",
     "preview": "vite preview",
     "test": "vitest run"
