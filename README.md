@@ -9,16 +9,21 @@ review gets done.
 **Status:** the base task manager works today (see [Features](#features)). The guided
 workflow is what gets built next, step by step, as described in [ROADMAP.md](ROADMAP.md).
 
-React 19 + TypeScript + Vite; data lives in the browser's `localStorage`.
+React 19 + TypeScript + Vite in front; a small Node API (Hono + `node:sqlite`) behind.
+Single user, no auth. Requires Node 24.
 
 ## Commands
 
 ```sh
-npm install      # dependencies
-npm run dev      # dev server at http://localhost:5173
-npm test         # quick-add parser tests (Vitest)
-npm run build    # type-check + production build in dist/
+npm install           # dependencies
+npm run dev:server    # API at http://localhost:3001, data in server/data/azenda.db
+npm run dev           # app at http://localhost:5173 (proxies /api to the server)
+npm test              # parser, store and API tests (Vitest)
+npm run build         # type-check app + server, production build in dist/
 ```
+
+Environment: `PORT` (default 3001) and `AZENDA_DB` (default `server/data/azenda.db`).
+Data from the previous `localStorage` version is migrated to the server on first load.
 
 ## Features
 
@@ -41,7 +46,11 @@ come back to.
 src/
   App.tsx              layout, current view, actions
   types.ts             Task, Project, View
-  lib/store.ts         state + persistence (plug a backend in here)
+  lib/store.ts         state, optimistic updates through the API
+server/
+  index.ts             entry point: opens the DB, serves the API
+  app.ts               Hono routes (+ app.test.ts)
+  db.ts                SQLite store (+ db.test.ts)
   lib/views.ts         what each view shows (Today, Next 7 days, …)
   lib/parse.ts         quick-add parser (+ parse.test.ts)
   lib/dates.ts         date helpers and formatting
