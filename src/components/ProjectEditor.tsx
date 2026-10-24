@@ -15,6 +15,7 @@ export function ProjectEditor({ project, projects, onSave, onClose }: Props) {
   const [parent, setParent] = useState(project.parent ?? '')
   const [target, setTarget] = useState(project.target ?? '')
   const [dod, setDod] = useState(project.dod ?? '')
+  const [start, setStart] = useState(project.start ?? '')
   const [deadline, setDeadline] = useState(project.end ?? '')
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export function ProjectEditor({ project, projects, onSave, onClose }: Props) {
           parent: parent || null,
           target: target.trim() || null,
           dod: dod.trim() || null,
+          start: complete && deadline && start ? start : null,
           end: complete && deadline ? deadline : null,
         })
       }}>
@@ -59,12 +61,15 @@ export function ProjectEditor({ project, projects, onSave, onClose }: Props) {
         </label>
         <p className="hint">{complete ? 'This is a project.' : 'Without both, this is a list: a scoped group of tasks.'}</p>
         <div className="fields">
-          <label>Sprint deadline
-            <input type="date" id="pr-deadline" value={deadline} disabled={!complete} onChange={e => setDeadline(e.target.value)} />
+          <label>Start
+            <input type="date" id="pr-start" value={start} max={deadline || undefined} disabled={!complete || !deadline} onChange={e => setStart(e.target.value)} />
+          </label>
+          <label>End
+            <input type="date" id="pr-deadline" value={deadline} min={start || undefined} disabled={!complete} onChange={e => setDeadline(e.target.value)} />
           </label>
         </div>
         <p className="hint">
-          {complete ? 'The only place a target gets a deadline.' : 'A list cannot enter a sprint.'}
+          {complete ? 'The end is the target\'s deadline. Without a start, the project is active right away.' : 'A list has no dates.'}
         </p>
         <div className="sheet-actions">
           <div className="spacer" />

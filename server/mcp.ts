@@ -39,7 +39,7 @@ const taskRow = (t: Task, d: Data, now: number) => ({
   reschedules: t.reschedules,
 })
 
-const decisionRow = (x: Decision) => x.kind === 'deadline'
+const decisionRow = (x: Decision) => 'project' in x
   ? { id: x.id, kind: x.kind, days: x.days, project: { id: x.project.id, name: x.project.name, target: x.project.target, deadline: x.project.end } }
   : { id: x.id, kind: x.kind, days: x.days, task: { id: x.task.id, title: x.task.title, due: x.task.due, labels: x.task.labels } }
 

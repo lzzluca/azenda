@@ -12,6 +12,10 @@ export const isProject = (p: Project) => !!p.target && !!p.dod
 
 export const isOpen = (p: Project) => !p.closedAt
 
+/** A project with an end is active, or planned while its start (YYYY-MM-DD) is after `today`; without dates, neither. */
+export const phase = (p: Project, today: string): 'active' | 'planned' | null =>
+  !p.end ? null : p.start && p.start > today ? 'planned' : 'active'
+
 type LegacySprint = { sprint?: { deadline: string; extensions?: Project['extensions'] } | null }
 
 /** Fills the fields added after the first release, for rows saved before them; a saved sprint becomes an end date. */

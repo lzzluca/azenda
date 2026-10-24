@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Project } from '../types'
-import { childrenOf, isProject, normalizeProject, subtree, withoutProject } from './projects'
+import { childrenOf, isProject, normalizeProject, phase, subtree, withoutProject } from './projects'
 
 const p = (id: string, extra: Partial<Project> = {}): Project =>
   normalizeProject({ id, name: id, color: '#000', order: 1, ...extra })
@@ -20,6 +20,14 @@ describe('projects', () => {
     const extensions = [{ from: '2026-10-01', to: '2026-11-01', reason: 'r' }]
     const legacy = { id: 'a', name: 'a', color: '#000', order: 1, sprint: { deadline: '2026-11-01', extensions } }
     expect(normalizeProject(legacy)).toEqual(p('a', { end: '2026-11-01', extensions }))
+  })
+
+  it('is active until its end, planned before its start, neither without dates', () => {
+    const today = '2026-10-24'
+    expect(phase(p('a'), today)).toBeNull()
+    expect(phase(p('a', { end: '2026-11-01' }), today)).toBe('active')
+    expect(phase(p('a', { start: '2026-10-24', end: '2026-11-01' }), today)).toBe('active')
+    expect(phase(p('a', { start: '2026-10-25', end: '2026-11-01' }), today)).toBe('planned')
   })
 
   it('lists children, treating a missing parent as top level', () => {

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import type { Data, View } from '../types'
 import { iso } from '../lib/dates'
 import { decisions } from '../lib/decisions'
-import { childrenOf, isProject } from '../lib/projects'
+import { childrenOf, isProject, phase } from '../lib/projects'
 import { NEXT, RADAR } from '../lib/tasks'
 import { closedProjects, inInbox, openTasks, sortedProjects } from '../lib/views'
 import { DoneIcon, InboxIcon, LabelIcon, PlusIcon, TodayIcon, UpcomingIcon } from './icons'
@@ -37,7 +37,7 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
   const tree = (parent: string | null, depth: number): ReactNode[] =>
     childrenOf(projects, parent).flatMap(p => [
       item(`p:${p.id}`, <span className="dot" style={{ background: p.color }} />, (isProject(p) ? '🎯 ' : '') + p.name,
-        open.filter(t => t.project === p.id).length, p.end && <span className="tag">sprint</span>, depth),
+        open.filter(t => t.project === p.id).length, phase(p, td) && <span className="tag">{phase(p, td)}</span>, depth),
       ...tree(p.id, depth + 1),
     ])
 

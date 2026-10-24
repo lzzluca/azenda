@@ -23,9 +23,10 @@ import { MenuIcon } from './components/icons'
 
 const VIEW_KEY = 'azenda-view'
 
-function SprintTag({ deadline }: { deadline: string }) {
-  const n = dayDiff(deadline)
-  const text = n < 0 ? `sprint · ${-n}d late` : n === 0 ? 'sprint · due today' : `sprint · ${n}d left`
+function DatesTag({ start, end }: { start: string | null; end: string }) {
+  if (start && dayDiff(start) > 0) return <span className="tag">planned · starts {start}</span>
+  const n = dayDiff(end)
+  const text = n < 0 ? `active · ${-n}d late` : n === 0 ? 'active · due today' : `active · ${n}d left`
   return <span className={'tag' + (n < 0 ? ' late' : '')}>{text}</span>
 }
 
@@ -161,7 +162,7 @@ export function App() {
 
   const card = (d: Decision) => <DecisionCard key={d.kind + d.id} decision={d} projects={data.projects} onAct={act} />
   const containerName = (d: Decision) =>
-    d.kind === 'deadline' ? 'Projects' : d.task.project ? data.projects[d.task.project]?.name ?? 'Inbox' : 'Inbox'
+    'project' in d ? 'Projects' : d.task.project ? data.projects[d.task.project]?.name ?? 'Inbox' : 'Inbox'
 
   const closeEditor = useCallback(() => setEditingId(null), [])
   const closeProjectEditor = useCallback(() => setEditingProject(null), [])
@@ -190,7 +191,7 @@ export function App() {
                   <p className="muted">Closed on {new Date(vm.project.closedAt).toLocaleDateString()}. Its definition of done came true.</p>
                 ) : vm.project.target ? (
                   <p><b>🎯 Target</b> {vm.project.target}
-                    {vm.project.end && <SprintTag deadline={vm.project.end} />}
+                    {vm.project.end && <DatesTag start={vm.project.start} end={vm.project.end} />}
                   </p>
                 ) : (
                   <p className="muted">A list. Give it a target and a definition of done to make it a project.</p>
