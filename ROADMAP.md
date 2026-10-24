@@ -84,14 +84,18 @@ reason to use it.
 
 ### Build order
 
-1. Backend: Node/TS, single user, no auth; sync of the current data model.
-2. Containers with optional target, definition of done and parent; sprint; built-in
-   labels and containers; closing to Proud of.
-3. Rules engine, decision queue, cards in Today, review session.
-4. MCP server with tools 1–5.
-5. One-shot Todoist import (repeatable until Todoist is switched off). Imported old items
-   feed the decision queue in chunks, which doubles as the initial review.
+1. ~~Backend: Node/TS, single user, no auth; sync of the current data model.~~ Done.
+2. ~~Containers with optional target, definition of done and parent; sprint; built-in
+   labels and containers; closing to Proud of.~~ Done.
+3. ~~Rules engine, decision queue, cards in Today, review session.~~ Done.
+4. ~~MCP server with tools 1–5.~~ Done.
+5. ~~One-shot Todoist import (repeatable until Todoist is switched off). Imported old items
+   feed the decision queue in chunks, which doubles as the initial review.~~ Done, not yet
+   run against a real account.
 6. Recurrence and subtasks when needed (project checkpoint, v2).
+
+Not built from the model above: hiding built-in containers, the description-length cap,
+Today pulling one item from a sub-project after the dated tasks, the open-task trend.
 
 Deferred past v1: yearly goals, planned/recurrent containers, multi-user, project
 checkpoint, two-way Todoist sync (deliberately never).
