@@ -2,9 +2,9 @@
 
 A task manager with a method built in and an assistant that runs your reviews. Most task
 apps are neutral containers that let backlogs grow into a mess; aZenda turns stale items,
-repeated reschedules and missed deadlines into small daily decisions, gives each
-project's target a deadline through its sprint, and exposes its data to your own AI assistant through MCP so the
-review gets done.
+repeated reschedules and missed deadlines into small daily decisions, gives a project's
+target a deadline only when you commit to it, and exposes its data to your own AI assistant
+through MCP so the review gets done.
 
 **Status:** the base task manager works today (see [Features](#features)). The guided
 workflow is what gets built next, step by step, as described in [ROADMAP.md](ROADMAP.md).
@@ -56,10 +56,11 @@ the method to the assistant and starts a review.
 
 - Views: Inbox, Today (with overdue tasks), Next 7 days, Completed, Review, Proud of
 - Containers that nest: a container with a target and a definition of done is a project,
-  otherwise a list. Several can be in sprint at once; the sprint is the only place a target has a deadline.
-  Closing a project confirms its definition of done and moves it to Proud of.
+  otherwise a list. A project's end is the only place a target has a deadline; with an
+  optional start it is planned until then, otherwise active. Top-level projects without
+  dates live in Someday maybe and move out when they get an end. Closing a project confirms its definition of done and moves it to Proud of.
 - Decision queue: Inbox items after 15 days, untouched list items after 60, tasks rescheduled
-  twice, Radar older than 30 days, sprint deadlines passed. Three cards a day in Today, all of
+  twice, Radar older than 30 days, target deadlines passed. Three cards a day in Today, all of
   them in Review with a 15-minute timer.
 - Built-in labels `next` (next free slot) and `radar` (soon, not clear when)
 - Colored containers, labels, priorities P1–P4

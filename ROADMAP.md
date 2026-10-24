@@ -27,18 +27,23 @@ Proud of. Everything else is created by the user.
 grouped by year. A closed project is not reopened: its target was met, a new goal is a
 new project ("duplicate as new project" is a convenience).
 
-**Sprint.** A project in sprint is active, and the sprint is the only place where a
-*target* has a deadline. Several projects can be in sprint at once (a job search next to a
-marathon with a fixed date); keeping that number small is a review topic, not a rule. Tasks can carry dates anywhere, in or out of the
-sprint. When the deadline arrives, a decision card asks: new target, close, or extend with
-a reason.
+**Dates.** A project can have an end, the only place where a *target* has a deadline, and
+an optional start. With an end it is active, or planned while the start is in the future.
+Several projects can be active at once (a job search next to a marathon with a fixed date);
+keeping that number small is a review topic, not a rule. Tasks can carry dates anywhere.
+When the end passes, a decision card asks: new target, close, or extend with a reason.
+
+**Place follows dates.** Top-level projects without dates live in Someday maybe. Giving one
+an end moves it to the top level; removing the end moves it back. It happens only on that
+change, so a manual move sticks. Sub-projects stay with their parent, which decides when
+they run.
 
 **Labels**, built in, no caps: `Next` (do it in the next free slot), `Radar` (soon, but
-not clear when), `Sprint-<theme>` (applied automatically to the tasks of projects in sprint).
+not clear when).
 
 **Priority** is optional and derived, not assigned: two questions, "is there a real
 deadline?" and "what happens if it never gets done?", mapped to P1–P4. The assistant asks
-them during review or when a task enters the sprint.
+them during review or when a task enters an active project.
 
 **A task is an action.** Descriptions and reference material live in an external notes
 vault (e.g. Obsidian) behind a link; only execution instructions belong in the
@@ -86,7 +91,7 @@ reason to use it.
 ### Build order
 
 1. ~~Backend: Node/TS, single user, no auth; sync of the current data model.~~ Done.
-2. ~~Containers with optional target, definition of done and parent; sprint; built-in
+2. ~~Containers with optional target, definition of done and parent; start and end dates; built-in
    labels and containers; closing to Proud of.~~ Done.
 3. ~~Rules engine, decision queue, cards in Today, review session.~~ Done.
 4. ~~MCP server with tools 1–5.~~ Done.
@@ -104,7 +109,7 @@ checkpoint, two-way Todoist sync (deliberately never).
 ### Open questions
 
 - Should blocked actions ever exist, or is "draft until target" the only hard rule left
-  (a list cannot enter a sprint)?
+  (a list cannot have dates)?
 - Where does the MCP server run for a web app: alongside the backend, with a token?
 
 ## Ideas
