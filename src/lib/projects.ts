@@ -43,13 +43,6 @@ export function subtree(list: Project[], id: string): Set<string> {
   return out
 }
 
-/** Saves `p` into `projects`, ending any other sprint: only one project is in sprint at a time. */
-export function withProject(projects: Record<string, Project>, p: Project): Record<string, Project> {
-  const out = { ...projects, [p.id]: p }
-  if (p.sprint) for (const o of Object.values(out)) if (o.id !== p.id && o.sprint) out[o.id] = { ...o, sprint: null }
-  return out
-}
-
 /** Removes `id`; its children move up to its parent. */
 export function withoutProject(projects: Record<string, Project>, id: string): Record<string, Project> {
   const parent = projects[id]?.parent ?? null

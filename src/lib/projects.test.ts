@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Project } from '../types'
-import { childrenOf, isProject, normalizeProject, subtree, withProject, withoutProject } from './projects'
+import { childrenOf, isProject, normalizeProject, subtree, withoutProject } from './projects'
 
 const p = (id: string, extra: Partial<Project> = {}): Project =>
   normalizeProject({ id, name: id, color: '#000', order: 1, ...extra })
@@ -25,13 +25,6 @@ describe('projects', () => {
   it('collects a subtree', () => {
     const list = [p('a'), p('b', { parent: 'a' }), p('c', { parent: 'b' }), p('d')]
     expect([...subtree(list, 'a')].sort()).toEqual(['a', 'b', 'c'])
-  })
-
-  it('allows one sprint at a time', () => {
-    const projects = { a: p('a', { sprint: { deadline: '2026-11-01' } }), b: p('b') }
-    const next = withProject(projects, { ...projects.b, sprint: { deadline: '2026-12-01' } })
-    expect(next.a.sprint).toBeNull()
-    expect(next.b.sprint).toEqual({ deadline: '2026-12-01' })
   })
 
   it('moves children up when a container is removed', () => {

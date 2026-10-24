@@ -26,7 +26,6 @@ export function ProjectEditor({ project, projects, onSave, onClose }: Props) {
   const inside = subtree(projects, project.id)
   const parents = projects.filter(p => !inside.has(p.id))
   const complete = !!target.trim() && !!dod.trim()
-  const sprinting = projects.find(p => p.sprint && p.id !== project.id)
 
   return (
     <>
@@ -65,9 +64,7 @@ export function ProjectEditor({ project, projects, onSave, onClose }: Props) {
           </label>
         </div>
         <p className="hint">
-          {!complete ? 'A list cannot enter a sprint.'
-            : sprinting && deadline ? `One sprint at a time: saving ends the sprint of "${sprinting.name}".`
-            : 'The only place a target gets a deadline. One sprint at a time.'}
+          {complete ? 'The only place a target gets a deadline.' : 'A list cannot enter a sprint.'}
         </p>
         <div className="sheet-actions">
           <div className="spacer" />

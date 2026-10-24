@@ -53,14 +53,14 @@ describe('mcp', () => {
     expect(db.all().tasks.drop).toBeUndefined()
   })
 
-  it('refuses a sprint on a list and keeps one sprint at a time', async () => {
+  it('refuses a sprint on a list and allows several sprints at once', async () => {
     const { db, call } = await connect()
     db.saveProject(project('list'))
     db.saveProject(project('a', { target: 't', dod: 'd', sprint: { deadline: '2026-11-01' } }))
     db.saveProject(project('b', { target: 't', dod: 'd' }))
     expect((await call('update_project', { id: 'list', sprintDeadline: '2026-11-01' })).error).toBe(true)
     await call('update_project', { id: 'b', sprintDeadline: '2026-12-01' })
-    expect(db.all().projects.a.sprint).toBeNull()
+    expect(db.all().projects.a.sprint).toEqual({ deadline: '2026-11-01' })
     expect(db.all().projects.b.sprint).toEqual({ deadline: '2026-12-01' })
   })
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Data, Project, Task } from '../types'
 import { addDays, iso, norm } from './dates'
-import { BUILTINS, COLORS, normalizeProject, withProject, withoutProject } from './projects'
+import { BUILTINS, COLORS, normalizeProject, withoutProject } from './projects'
 import { normalizeTask, prepareSave } from './tasks'
 
 export { COLORS, newProject } from './projects'
@@ -124,12 +124,9 @@ export function useStore() {
     sync(api(`/tasks/${id}`, { method: 'DELETE' }))
   }, [])
 
-  /** Saves the container; if it is in sprint, any other sprint ends (one at a time). */
   const saveProject = useCallback((p: Project) => {
-    const projects = withProject(latest.current.projects, p)
-    const changed = Object.values(projects).filter(x => x !== latest.current.projects[x.id])
-    setData(d => ({ ...d, projects }))
-    for (const x of changed) sync(put('projects', x))
+    setData(d => ({ ...d, projects: { ...d.projects, [p.id]: p } }))
+    sync(put('projects', p))
   }, [])
 
   /** Deletes the container: tasks move to the Inbox, children to its parent (the server does the same). */

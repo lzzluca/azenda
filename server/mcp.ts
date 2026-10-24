@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import * as z from 'zod'
 import { decisions, resolve, RULES, type Decision } from '../src/lib/decisions.ts'
-import { isOpen, isProject, withProject } from '../src/lib/projects.ts'
+import { isOpen, isProject } from '../src/lib/projects.ts'
 import { derivePriority, merge, normalizeTask, prepareSave } from '../src/lib/tasks.ts'
 import type { Data, Project, Task } from '../src/types.ts'
 import type { Db } from './db.ts'
@@ -48,10 +48,7 @@ export function createMcpServer(db: Db) {
   const server = new McpServer({ name: 'azenda', version: '0.1.0' })
 
   const saveTask = (prev: Task | undefined, next: Task) => { const t = prepareSave(prev, next); db.saveTask(t); return t }
-  const saveProject = (p: Project) => {
-    const before = db.all().projects
-    for (const x of Object.values(withProject(before, p))) if (x !== before[x.id]) db.saveProject(x)
-  }
+  const saveProject = (p: Project) => db.saveProject(p)
 
   server.registerPrompt('review', { description: 'How to run an aZenda review by the method' }, () => ({
     messages: [{ role: 'user', content: { type: 'text', text: `${METHOD}\n\nStart by calling get_overview and get_decisions, then walk me through the queue one decision at a time.` } }],
