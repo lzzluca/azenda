@@ -27,13 +27,14 @@ Proud of. Everything else is created by the user.
 grouped by year. A closed project is not reopened: its target was met, a new goal is a
 new project ("duplicate as new project" is a convenience).
 
-**Sprint.** One project is active at a time: it is in sprint, and the sprint is the only
-place where a *target* has a deadline. Tasks can carry dates anywhere, in or out of the
+**Sprint.** A project in sprint is active, and the sprint is the only place where a
+*target* has a deadline. Several projects can be in sprint at once (a job search next to a
+marathon with a fixed date); keeping that number small is a review topic, not a rule. Tasks can carry dates anywhere, in or out of the
 sprint. When the deadline arrives, a decision card asks: new target, close, or extend with
 a reason.
 
 **Labels**, built in, no caps: `Next` (do it in the next free slot), `Radar` (soon, but
-not clear when), `Sprint-<theme>` (applied automatically to the active project's tasks).
+not clear when), `Sprint-<theme>` (applied automatically to the tasks of projects in sprint).
 
 **Priority** is optional and derived, not assigned: two questions, "is there a real
 deadline?" and "what happens if it never gets done?", mapped to P1–P4. The assistant asks

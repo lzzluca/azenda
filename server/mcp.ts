@@ -11,8 +11,8 @@ const DAY = 864e5
 const METHOD = `aZenda is a task manager with a method built in. You run its reviews.
 
 Containers nest. One with a target and a definition of done is a project; without them it is a
-list. One project at a time is in sprint: the only place a target has a deadline. Tasks can be
-dated anywhere. Labels: "next" = do it in the next free slot, "radar" = soon but not clear when.
+list. A project in sprint has a deadline for its target: the only place a target gets one.
+Several projects can be in sprint at once. Tasks can be dated anywhere. Labels: "next" = do it in the next free slot, "radar" = soon but not clear when.
 
 The decision queue (get_decisions) lists items that matured a rule: Inbox for ${RULES.inbox} days,
 untouched in a list for ${RULES.stale} days, rescheduled ${RULES.reschedules} times, on Radar for
@@ -157,7 +157,7 @@ export function createMcpServer(db: Db) {
   })
 
   server.registerTool('update_project', {
-    description: 'Change a container. Setting target and dod makes it a project; sprintDeadline starts its sprint (ending any other); sprintDeadline: null ends it. Targets must be measurable.',
+    description: 'Change a container. Setting target and dod makes it a project; sprintDeadline starts or moves its sprint; sprintDeadline: null ends it. Targets must be measurable.',
     inputSchema: {
       id: z.string(), name: z.string().optional(), target: z.string().nullable().optional(), dod: z.string().nullable().optional(),
       parent: z.string().nullable().optional(), sprintDeadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),

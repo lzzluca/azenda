@@ -2,8 +2,8 @@
 
 A task manager with a method built in and an assistant that runs your reviews. Most task
 apps are neutral containers that let backlogs grow into a mess; aZenda turns stale items,
-repeated reschedules and missed deadlines into small daily decisions, keeps one sprint
-active at a time, and exposes its data to your own AI assistant through MCP so the
+repeated reschedules and missed deadlines into small daily decisions, gives each
+project's target a deadline through its sprint, and exposes its data to your own AI assistant through MCP so the
 review gets done.
 
 **Status:** the base task manager works today (see [Features](#features)). The guided
@@ -56,7 +56,7 @@ the method to the assistant and starts a review.
 
 - Views: Inbox, Today (with overdue tasks), Next 7 days, Completed, Review, Proud of
 - Containers that nest: a container with a target and a definition of done is a project,
-  otherwise a list. One sprint at a time, the only place a target has a deadline.
+  otherwise a list. Several can be in sprint at once; the sprint is the only place a target has a deadline.
   Closing a project confirms its definition of done and moves it to Proud of.
 - Decision queue: Inbox items after 15 days, untouched list items after 60, tasks rescheduled
   twice, Radar older than 30 days, sprint deadlines passed. Three cards a day in Today, all of
@@ -81,7 +81,7 @@ src/
   App.tsx              layout, current view, actions
   types.ts             Task, Project, View
   lib/store.ts         state, optimistic updates through the API
-  lib/projects.ts      container rules: project vs list, nesting, one sprint
+  lib/projects.ts      container rules: project vs list, nesting
   lib/tasks.ts         task bookkeeping, Next/Radar, derived priority, merge
   lib/decisions.ts     the rules and the decision queue (shared with the server)
 server/
