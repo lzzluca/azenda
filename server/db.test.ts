@@ -5,9 +5,16 @@ import { openDb } from './db.ts'
 const task = (id: string, project: string | null): Task =>
   ({ id, title: id, desc: '', due: null, priority: 4, labels: [], project, done: false, doneAt: null, created: 1, updated: 1, reschedules: 0, radarSince: null })
 const project = (id: string, parent: string | null = null): Project =>
-  ({ id, name: id, color: '#000', order: 1, parent, target: null, dod: null, sprint: null, closedAt: null, builtin: null })
+  ({ id, name: id, color: '#000', order: 1, parent, target: null, dod: null, start: null, end: null, extensions: [], closedAt: null, builtin: null })
 
 describe('db', () => {
+  it('reads projects saved with a sprint as projects with an end date', () => {
+    const db = openDb()
+    const { start: _s, end: _e, extensions: _x, ...legacy } = project('a')
+    db.saveProject({ ...legacy, sprint: { deadline: '2026-11-01' } } as unknown as Project)
+    expect(db.all().projects.a).toEqual({ ...project('a'), end: '2026-11-01' })
+  })
+
   it('starts empty', () => {
     expect(openDb().all()).toEqual({ tasks: {}, projects: {} })
   })

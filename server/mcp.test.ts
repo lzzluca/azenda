@@ -9,7 +9,7 @@ const DAY = 864e5
 const task = (id: string, extra: Partial<Task> = {}): Task =>
   ({ id, title: id, desc: '', due: null, priority: 4, labels: [], project: null, done: false, doneAt: null, created: 1, updated: Date.now(), reschedules: 0, radarSince: null, ...extra })
 const project = (id: string, extra: Partial<Project> = {}): Project =>
-  ({ id, name: id, color: '#000', order: 1, parent: null, target: null, dod: null, sprint: null, closedAt: null, builtin: null, ...extra })
+  ({ id, name: id, color: '#000', order: 1, parent: null, target: null, dod: null, start: null, end: null, extensions: [], closedAt: null, builtin: null, ...extra })
 
 async function connect() {
   const db = openDb()
@@ -56,12 +56,12 @@ describe('mcp', () => {
   it('refuses a sprint on a list and allows several sprints at once', async () => {
     const { db, call } = await connect()
     db.saveProject(project('list'))
-    db.saveProject(project('a', { target: 't', dod: 'd', sprint: { deadline: '2026-11-01' } }))
+    db.saveProject(project('a', { target: 't', dod: 'd', end: '2026-11-01' }))
     db.saveProject(project('b', { target: 't', dod: 'd' }))
     expect((await call('update_project', { id: 'list', sprintDeadline: '2026-11-01' })).error).toBe(true)
     await call('update_project', { id: 'b', sprintDeadline: '2026-12-01' })
-    expect(db.all().projects.a.sprint).toEqual({ deadline: '2026-11-01' })
-    expect(db.all().projects.b.sprint).toEqual({ deadline: '2026-12-01' })
+    expect(db.all().projects.a.end).toBe('2026-11-01')
+    expect(db.all().projects.b.end).toBe('2026-12-01')
   })
 
   it('offers the review prompt', async () => {

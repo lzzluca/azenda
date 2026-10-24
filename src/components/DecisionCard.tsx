@@ -23,7 +23,7 @@ export function DecisionCard({ decision: d, projects, onAct }: Props) {
         <div className="what">🎯 {p.target} <span className="muted">· {p.name}</span></div>
         {extending ? (
           <form className="extend" onSubmit={e => { e.preventDefault(); if (deadline && reason.trim()) onAct(d, { extend: { deadline, reason: reason.trim() } }) }}>
-            <input type="date" aria-label="New deadline" required min={p.sprint?.deadline} value={deadline} onChange={e => setDeadline(e.target.value)} />
+            <input type="date" aria-label="New deadline" required min={p.end ?? undefined} value={deadline} onChange={e => setDeadline(e.target.value)} />
             <input placeholder="Why does it need more time?" aria-label="Reason" required maxLength={200} value={reason} onChange={e => setReason(e.target.value)} />
             <button type="submit" className="btn">Extend</button>
             <button type="button" className="plain" onClick={() => setExtending(false)}>Cancel</button>

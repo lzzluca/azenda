@@ -12,13 +12,17 @@ export const isProject = (p: Project) => !!p.target && !!p.dod
 
 export const isOpen = (p: Project) => !p.closedAt
 
-/** Fills the fields added after the first release, for rows saved before them. */
-export const normalizeProject = (p: Partial<Project> & Pick<Project, 'id' | 'name' | 'color' | 'order'>): Project => ({
+type LegacySprint = { sprint?: { deadline: string; extensions?: Project['extensions'] } | null }
+
+/** Fills the fields added after the first release, for rows saved before them; a saved sprint becomes an end date. */
+export const normalizeProject = ({ sprint, ...p }: Partial<Project> & Pick<Project, 'id' | 'name' | 'color' | 'order'> & LegacySprint): Project => ({
   ...p,
   parent: p.parent ?? null,
   target: p.target ?? null,
   dod: p.dod ?? null,
-  sprint: p.sprint ?? null,
+  start: p.start ?? null,
+  end: p.end ?? sprint?.deadline ?? null,
+  extensions: p.extensions ?? sprint?.extensions ?? [],
   closedAt: p.closedAt ?? null,
   builtin: p.builtin ?? null,
 })

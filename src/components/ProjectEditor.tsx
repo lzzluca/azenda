@@ -15,7 +15,7 @@ export function ProjectEditor({ project, projects, onSave, onClose }: Props) {
   const [parent, setParent] = useState(project.parent ?? '')
   const [target, setTarget] = useState(project.target ?? '')
   const [dod, setDod] = useState(project.dod ?? '')
-  const [deadline, setDeadline] = useState(project.sprint?.deadline ?? '')
+  const [deadline, setDeadline] = useState(project.end ?? '')
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -39,7 +39,7 @@ export function ProjectEditor({ project, projects, onSave, onClose }: Props) {
           parent: parent || null,
           target: target.trim() || null,
           dod: dod.trim() || null,
-          sprint: complete && deadline ? { deadline } : null,
+          end: complete && deadline ? deadline : null,
         })
       }}>
         <input id="ed-title" aria-label="Name" maxLength={60} required autoFocus value={name} onChange={e => setName(e.target.value)} />

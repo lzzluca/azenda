@@ -143,7 +143,7 @@ export function App() {
   const closeProject = () => {
     if (!vm.project) return
     if (!armedClose) return setArmedClose(true)
-    saveProject({ ...vm.project, sprint: null, closedAt: Date.now() })
+    saveProject({ ...vm.project, closedAt: Date.now() })
     setView('proud')
     showToast({ msg: `"${vm.project.name}" is done. Proud of it.` })
   }
@@ -190,7 +190,7 @@ export function App() {
                   <p className="muted">Closed on {new Date(vm.project.closedAt).toLocaleDateString()}. Its definition of done came true.</p>
                 ) : vm.project.target ? (
                   <p><b>🎯 Target</b> {vm.project.target}
-                    {vm.project.sprint && <SprintTag deadline={vm.project.sprint.deadline} />}
+                    {vm.project.end && <SprintTag deadline={vm.project.end} />}
                   </p>
                 ) : (
                   <p className="muted">A list. Give it a target and a definition of done to make it a project.</p>

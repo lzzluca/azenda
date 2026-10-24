@@ -37,7 +37,7 @@ export function Sidebar({ data, view, onView, onAddProject }: Props) {
   const tree = (parent: string | null, depth: number): ReactNode[] =>
     childrenOf(projects, parent).flatMap(p => [
       item(`p:${p.id}`, <span className="dot" style={{ background: p.color }} />, (isProject(p) ? '🎯 ' : '') + p.name,
-        open.filter(t => t.project === p.id).length, p.sprint && <span className="tag">sprint</span>, depth),
+        open.filter(t => t.project === p.id).length, p.end && <span className="tag">sprint</span>, depth),
       ...tree(p.id, depth + 1),
     ])
 

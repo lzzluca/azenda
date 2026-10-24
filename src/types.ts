@@ -36,8 +36,12 @@ export interface Project {
   target: string | null
   /** What must be true to close the project. */
   dod: string | null
-  /** Set while the project is in sprint: the only place a target has a deadline (YYYY-MM-DD). */
-  sprint: { deadline: string; extensions?: { from: string; to: string; reason: string }[] } | null
+  /** When work on the target starts (YYYY-MM-DD); null means from now. */
+  start: string | null
+  /** The target's deadline (YYYY-MM-DD): the only place a target has one. Null means no dates. */
+  end: string | null
+  /** Each time the end was moved, and why. */
+  extensions: { from: string; to: string; reason: string }[]
   /** When the project was closed and moved to Proud of. */
   closedAt: number | null
   /** Built-in containers cannot be deleted. */

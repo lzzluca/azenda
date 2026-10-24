@@ -23,8 +23,8 @@ export function decisions(d: Data, now = Date.now()): Decision[] {
   const td = iso(new Date(now))
 
   for (const p of Object.values(d.projects)) {
-    if (isOpen(p) && p.sprint && p.sprint.deadline < td) {
-      out.push({ kind: 'deadline', id: p.id, project: p, days: -dayDiff(p.sprint.deadline, new Date(now)) })
+    if (isOpen(p) && p.end && p.end < td) {
+      out.push({ kind: 'deadline', id: p.id, project: p, days: -dayDiff(p.end, new Date(now)) })
     }
   }
 
@@ -65,10 +65,10 @@ export function resolve(d: Decision, a: DecisionAction, data: Data, now = Date.n
   if (d.kind === 'deadline') {
     const p = data.projects[d.id] ?? d.project
     if (a === 'newTarget') r.editProject = p.id
-    else if (a === 'close') r.saveProjects.push({ ...p, sprint: null, closedAt: now })
-    else if (typeof a === 'object' && p.sprint) {
-      const extensions = [...(p.sprint.extensions ?? []), { from: p.sprint.deadline, to: a.extend.deadline, reason: a.extend.reason }]
-      r.saveProjects.push({ ...p, sprint: { deadline: a.extend.deadline, extensions } })
+    else if (a === 'close') r.saveProjects.push({ ...p, closedAt: now })
+    else if (typeof a === 'object' && p.end) {
+      const extensions = [...p.extensions, { from: p.end, to: a.extend.deadline, reason: a.extend.reason }]
+      r.saveProjects.push({ ...p, end: a.extend.deadline, extensions })
     }
     return r
   }

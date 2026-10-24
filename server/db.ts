@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite'
+import { normalizeProject } from '../src/lib/projects.ts'
 import type { Data, Project, Task } from '../src/types.ts'
 
 type Table = 'tasks' | 'projects'
@@ -34,12 +35,14 @@ export function openDb(file = ':memory:') {
   const deleteTask = (id: string) => { stmts.tasks.remove.run(id) }
   const saveProject = (p: Project) => { stmts.projects.upsert.run(p.id, JSON.stringify(p), Date.now()) }
 
+  const projects = () => Object.fromEntries(Object.entries(rows<Project>('projects')).map(([k, p]) => [k, normalizeProject(p)]))
+
   /** Deletes the container: its tasks move to the Inbox, its children to its parent. */
   const deleteProject = (id: string) => transaction(() => {
-    const projects = rows<Project>('projects')
-    const parent = projects[id]?.parent ?? null
+    const list = projects()
+    const parent = list[id]?.parent ?? null
     stmts.projects.remove.run(id)
-    for (const p of Object.values(projects)) {
+    for (const p of Object.values(list)) {
       if (p.parent === id) saveProject({ ...p, parent })
     }
     for (const t of Object.values(rows<Task>('tasks'))) {
@@ -47,7 +50,7 @@ export function openDb(file = ':memory:') {
     }
   })
 
-  const all = (): Data => ({ tasks: rows<Task>('tasks'), projects: rows<Project>('projects') })
+  const all = (): Data => ({ tasks: rows<Task>('tasks'), projects: projects() })
 
   return { all, saveTask, deleteTask, saveProject, deleteProject, close: () => db.close() }
 }

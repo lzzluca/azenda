@@ -40,7 +40,7 @@ const taskRow = (t: Task, d: Data, now: number) => ({
 })
 
 const decisionRow = (x: Decision) => x.kind === 'deadline'
-  ? { id: x.id, kind: x.kind, days: x.days, project: { id: x.project.id, name: x.project.name, target: x.project.target, deadline: x.project.sprint?.deadline } }
+  ? { id: x.id, kind: x.kind, days: x.days, project: { id: x.project.id, name: x.project.name, target: x.project.target, deadline: x.project.end } }
   : { id: x.id, kind: x.kind, days: x.days, task: { id: x.task.id, title: x.task.title, due: x.task.due, labels: x.task.labels } }
 
 /** The assistant's side of aZenda: tools over the store, plus the method as a prompt. */
@@ -61,7 +61,7 @@ export function createMcpServer(db: Db) {
     const open = Object.values(d.tasks).filter(t => !t.done)
     const containers = Object.values(d.projects).filter(isOpen).map(p => ({
       id: p.id, name: p.name, kind: isProject(p) ? 'project' : 'list', parent: p.parent, builtin: p.builtin,
-      target: p.target, dod: p.dod, sprint: p.sprint, openTasks: open.filter(t => t.project === p.id).length,
+      target: p.target, dod: p.dod, start: p.start, end: p.end, openTasks: open.filter(t => t.project === p.id).length,
     }))
     return json({ containers, inboxTasks: open.filter(t => !t.project || !d.projects[t.project]).length, openTasks: open.length, pendingDecisions: decisions(d).length, rules: RULES })
   })
@@ -168,10 +168,10 @@ export function createMcpServer(db: Db) {
     const next: Project = {
       ...p, ...(name !== undefined && { name }), ...(target !== undefined && { target }), ...(dod !== undefined && { dod }), ...(parent !== undefined && { parent }),
     }
-    if (sprintDeadline === null) next.sprint = null
+    if (sprintDeadline === null) next.end = null
     else if (sprintDeadline) {
       if (!isProject(next)) return fail('A list cannot enter a sprint: set a target and a definition of done first')
-      next.sprint = { ...(next.sprint ?? {}), deadline: sprintDeadline }
+      next.end = sprintDeadline
     }
     saveProject(next)
     return json(next)
@@ -184,7 +184,7 @@ export function createMcpServer(db: Db) {
     const p = db.all().projects[id]
     if (!p) return fail(`No container ${id}`)
     if (!isProject(p)) return fail('Only a project (target + definition of done) can be closed; delete a list instead')
-    saveProject({ ...p, sprint: null, closedAt: Date.now() })
+    saveProject({ ...p, closedAt: Date.now() })
     return json({ ok: true })
   })
 

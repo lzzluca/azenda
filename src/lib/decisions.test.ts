@@ -33,13 +33,13 @@ describe('decisions', () => {
   })
 
   it('asks when a sprint deadline has passed, most overdue first', () => {
-    const p = project('p', { target: 't', dod: 'd', sprint: { deadline: '2026-10-20' } })
+    const p = project('p', { target: 't', dod: 'd', end: '2026-10-20' })
     const d = data([task('old', { updated: now - 100 * DAY })], [p])
     expect(decisions(d, now).map(x => [x.kind, x.days])).toEqual([['inbox', 100], ['deadline', 4]])
   })
 
   it('ignores done tasks and closed projects', () => {
-    const p = project('p', { target: 't', dod: 'd', sprint: { deadline: '2026-10-20' }, closedAt: now })
+    const p = project('p', { target: 't', dod: 'd', end: '2026-10-20', closedAt: now })
     const d = data([task('done', { done: true, updated: now - 100 * DAY })], [p])
     expect(decisions(d, now)).toEqual([])
   })

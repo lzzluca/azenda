@@ -16,6 +16,12 @@ describe('projects', () => {
     expect(normalizeProject({ id: 'a', name: 'a', color: '#000', order: 1 })).toEqual(p('a'))
   })
 
+  it('turns a saved sprint into an end date, keeping its extensions', () => {
+    const extensions = [{ from: '2026-10-01', to: '2026-11-01', reason: 'r' }]
+    const legacy = { id: 'a', name: 'a', color: '#000', order: 1, sprint: { deadline: '2026-11-01', extensions } }
+    expect(normalizeProject(legacy)).toEqual(p('a', { end: '2026-11-01', extensions }))
+  })
+
   it('lists children, treating a missing parent as top level', () => {
     const list = [p('root'), p('child', { parent: 'root' }), p('orphan', { parent: 'gone' })]
     expect(childrenOf(list, null).map(x => x.id)).toEqual(['root', 'orphan'])
